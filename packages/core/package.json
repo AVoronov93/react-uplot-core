@@ -1,6 +1,6 @@
 {
 	"name": "@ruplot/core",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Framework-agnostic engine for ruplot — session, classifier, stores, sync, data plane",
 	"type": "module",
 	"sideEffects": false,
@@ -14,13 +14,22 @@
 			"require": "./dist/index.cjs"
 		}
 	},
-	"files": ["dist", "README.md"],
+	"files": [
+		"dist",
+		"README.md"
+	],
 	"scripts": {
 		"build": "tsup src/index.ts --format esm,cjs --dts --clean --external uplot",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"test": "vitest run"
 	},
-	"keywords": ["uplot", "chart", "timeseries", "canvas", "performance"],
+	"keywords": [
+		"uplot",
+		"chart",
+		"timeseries",
+		"canvas",
+		"performance"
+	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Avoronov93/react-uplot-core.git",
