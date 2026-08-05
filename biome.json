@@ -35,7 +35,8 @@
 			"**/test-results/**",
 			"**/*.tsbuildinfo",
 			"packages/benchmarks/results/**",
-			"docs/media/**"
+			"docs/media/**",
+			"**/package.json"
 		]
 	}
 }
