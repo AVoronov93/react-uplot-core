@@ -1,6 +1,6 @@
 {
 	"name": "@ruplot/react",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Benchmark-driven React 19 bindings for uPlot",
 	"type": "module",
 	"sideEffects": false,
@@ -14,14 +14,24 @@
 			"require": "./dist/index.cjs"
 		}
 	},
-	"files": ["dist", "README.md"],
+	"files": [
+		"dist",
+		"README.md"
+	],
 	"scripts": {
 		"build": "tsup src/index.ts --format esm,cjs --dts --clean --external react --external react-dom --external uplot --external @ruplot/core",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"test": "vitest run",
 		"size": "node ../../scripts/check-size.mjs"
 	},
-	"keywords": ["react", "uplot", "chart", "timeseries", "hooks", "performance"],
+	"keywords": [
+		"react",
+		"uplot",
+		"chart",
+		"timeseries",
+		"hooks",
+		"performance"
+	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Avoronov93/react-uplot-core.git",
