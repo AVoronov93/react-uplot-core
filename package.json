@@ -1,0 +1,44 @@
+{
+	"name": "ruplot",
+	"private": true,
+	"type": "module",
+	"packageManager": "pnpm@9.15.0",
+	"engines": {
+		"node": ">=20"
+	},
+	"scripts": {
+		"build": "pnpm -r --filter=./packages/* run build",
+		"dev": "pnpm --filter @ruplot/examples dev",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"bench": "pnpm --filter @ruplot/benchmarks bench",
+		"bench:compare": "pnpm --filter @ruplot/benchmarks bench:compare",
+		"test:e2e": "pnpm --filter @ruplot/benchmarks test:e2e",
+		"lint": "biome check . && eslint .",
+		"lint:fix": "biome check --write . && eslint . --fix",
+		"typecheck": "pnpm -r --filter=./packages/* run typecheck",
+		"size": "pnpm --filter @ruplot/react run size",
+		"storybook": "pnpm --filter @ruplot/storybook storybook",
+		"build-storybook": "pnpm --filter @ruplot/storybook build-storybook",
+		"capture:gif": "pnpm --filter @ruplot/examples capture:gif",
+		"capture:gif:large": "pnpm --filter @ruplot/examples capture:gif:large",
+		"capture:gif:all": "pnpm --filter @ruplot/examples capture:gif:all",
+		"changeset": "changeset",
+		"version-packages": "changeset version",
+		"release": "pnpm build && changeset publish"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@changesets/cli": "^2.27.11",
+		"@eslint/js": "^9.18.0",
+		"@types/node": "^22.10.5",
+		"@types/react": "^19.0.7",
+		"@types/react-dom": "^19.0.3",
+		"eslint": "^9.18.0",
+		"eslint-plugin-react-hooks": "^5.1.0",
+		"globals": "^15.14.0",
+		"typescript": "^5.7.3",
+		"typescript-eslint": "^8.20.0",
+		"vitest": "^3.0.2"
+	}
+}

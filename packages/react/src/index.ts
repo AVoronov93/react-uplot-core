@@ -1,0 +1,98 @@
+import { Brush as BrushComponent } from "./brush.js";
+import { AutoSize as AutoSizeComponent, type AutoSizeProps } from "./auto-size.js";
+import {
+	Chart as ChartComponent,
+	type ChartProps,
+	type ChartRef,
+	type ChartSyncProps,
+} from "./chart.js";
+import {
+	SyncGroup as SyncGroupComponent,
+	useSyncGroup,
+	useSyncGroupContext,
+	type SyncGroupContextValue,
+	type SyncGroupHandle,
+	type SyncGroupProps,
+} from "./sync-group.js";
+import { Tooltip as TooltipComponent, type TooltipProps, type TooltipRenderProps } from "./tooltip.js";
+import { Legend as LegendComponent, type LegendProps } from "./legend.js";
+import { usePlugin } from "./use-plugin.js";
+
+export type { ChartProps, ChartRef, ChartSyncProps };
+export type { ChartHandle } from "./context.js";
+export { useChartHandle } from "./context.js";
+export {
+	useUPlot,
+	useCursor,
+	useScales,
+	useSeries,
+	useSelection,
+	useSync,
+} from "./hooks.js";
+export { Brush, type BrushProps, type TimeRange } from "./brush.js";
+export {
+	useBrushStreamPolicy,
+	type BrushStreamPolicy,
+	type BrushStreamPolicyOptions,
+} from "./brush-stream-policy.js";
+export { AutoSizeComponent as AutoSize, type AutoSizeProps };
+export { LegendComponent as Legend, type LegendProps };
+export {
+	SyncGroupComponent as SyncGroup,
+	useSyncGroup,
+	useSyncGroupContext,
+};
+export type { SyncGroupProps, SyncGroupHandle, SyncGroupContextValue };
+export { TooltipComponent as Tooltip, type TooltipProps, type TooltipRenderProps };
+export { usePlugin };
+
+// Re-export production helpers so apps can import from one package.
+export {
+	streamingWindow,
+	streamingWindowTransferable,
+	seriesStepped,
+	holdForwardGaps,
+	holdForwardAligned,
+	dualData,
+	createDataPlane,
+	createChartStores,
+	rebindSyncGroup,
+	thresholdPlugin,
+	objectSeriesPaths,
+	createPlugin,
+	createDataWorker,
+} from "@ruplot/core";
+export type {
+	DataPlane,
+	DualDataParams,
+	StreamingWindowParams,
+	RuplotPlugin,
+	RuplotPluginContext,
+	ThresholdPluginOptions,
+	ObjectSeriesPathsOptions,
+	ObjectSeriesRenderArgs,
+	CursorSnapshot,
+	ScalesSnapshot,
+	ScaleRange,
+	SelectSnapshot,
+	SeriesVisibilitySnapshot,
+	SyncSnapshot,
+	StreamingConfig,
+	StreamingMode,
+	DataWorkerClient,
+	DataWorkerRequest,
+	DataWorkerResponse,
+	ChartStores,
+} from "@ruplot/core";
+
+/**
+ * Declarative chart + composition slots.
+ */
+export const Chart = Object.assign(ChartComponent, {
+	Plot: ChartComponent,
+	Brush: BrushComponent,
+	SyncGroup: SyncGroupComponent,
+	Tooltip: TooltipComponent,
+	AutoSize: AutoSizeComponent,
+	Legend: LegendComponent,
+});

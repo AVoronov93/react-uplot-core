@@ -1,0 +1,46 @@
+{
+	"name": "@ruplot/core",
+	"version": "0.1.0",
+	"description": "Framework-agnostic engine for ruplot — session, classifier, stores, sync, data plane",
+	"type": "module",
+	"sideEffects": false,
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": ["dist", "README.md"],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts --clean --external uplot",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"test": "vitest run"
+	},
+	"keywords": ["uplot", "chart", "timeseries", "canvas", "performance"],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Avoronov93/react-uplot-core.git",
+		"directory": "packages/core"
+	},
+	"bugs": {
+		"url": "https://github.com/Avoronov93/react-uplot-core/issues"
+	},
+	"homepage": "https://github.com/Avoronov93/react-uplot-core#readme",
+	"peerDependencies": {
+		"uplot": "^1.6.0"
+	},
+	"devDependencies": {
+		"tsup": "^8.3.5",
+		"typescript": "^5.7.3",
+		"uplot": "^1.6.31",
+		"vitest": "^3.0.2"
+	},
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	}
+}

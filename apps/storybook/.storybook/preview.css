@@ -1,0 +1,69 @@
+body {
+	font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+	color: #0f172a;
+}
+
+.sb-note {
+	margin: 0 0 12px;
+	max-width: 52ch;
+	color: #475569;
+	font-size: 0.92rem;
+}
+
+.sb-stats {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 12px;
+	font-variant-numeric: tabular-nums;
+}
+
+.sb-stat strong {
+	display: block;
+	font-size: 1.4rem;
+	letter-spacing: -0.03em;
+}
+
+.sb-stat span {
+	font-size: 0.72rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #64748b;
+}
+
+/* Uniform type chips in API MDX tables */
+.doc-api-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+	margin: 0.75rem 0 1.25rem;
+}
+
+.doc-api-table th,
+.doc-api-table td {
+	text-align: left;
+	vertical-align: top;
+	padding: 0.55rem 0.65rem;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.doc-api-table th {
+	font-size: 0.75rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #64748b;
+	background: #f8fafc;
+}
+
+.doc-api-table code.doc-type,
+.doc-api-table td:first-child code {
+	display: inline;
+	font-family: ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	padding: 0.12em 0.45em;
+	border-radius: 4px;
+	background: #f1f5f9 !important;
+	color: #0f172a !important;
+	border: 1px solid #e2e8f0;
+	white-space: pre-wrap;
+}

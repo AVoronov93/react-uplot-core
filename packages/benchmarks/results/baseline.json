@@ -1,0 +1,27 @@
+{
+	"version": 1,
+	"updatedAt": "2026-08-05",
+	"notes": "Hard-gate seed. Absolute stream invariants are architectural; p95 refs are CI-tolerant ceilings (refresh from CI artifacts when runners stabilize).",
+	"policy": {
+		"p95MaxRatio": 1.1,
+		"fpsMinRatio": 0.9,
+		"skipScenarios": ["cursor"],
+		"absolute": {
+			"ruplot": {
+				"stream-60": {
+					"reactCommitsMax": 5,
+					"fpsMin": 50
+				}
+			}
+		}
+	},
+	"reference": {
+		"ruplot": {
+			"mount": { "p95Ms": 100 },
+			"update": { "p95Ms": 100 },
+			"stream-60": { "fps": 55, "reactCommits": 0 },
+			"resize": { "p95Ms": 100 },
+			"zoom": { "p95Ms": 100 }
+		}
+	}
+}

@@ -1,0 +1,58 @@
+{
+	"name": "@ruplot/react",
+	"version": "0.1.0",
+	"description": "Benchmark-driven React 19 bindings for uPlot",
+	"type": "module",
+	"sideEffects": false,
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": ["dist", "README.md"],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts --clean --external react --external react-dom --external uplot --external @ruplot/core",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"test": "vitest run",
+		"size": "node ../../scripts/check-size.mjs"
+	},
+	"keywords": ["react", "uplot", "chart", "timeseries", "hooks", "performance"],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Avoronov93/react-uplot-core.git",
+		"directory": "packages/react"
+	},
+	"bugs": {
+		"url": "https://github.com/Avoronov93/react-uplot-core/issues"
+	},
+	"homepage": "https://github.com/Avoronov93/react-uplot-core#readme",
+	"dependencies": {
+		"@ruplot/core": "workspace:*"
+	},
+	"peerDependencies": {
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"uplot": "^1.6.0"
+	},
+	"devDependencies": {
+		"@testing-library/react": "^16.1.0",
+		"@types/react": "^19.0.7",
+		"@types/react-dom": "^19.0.3",
+		"jsdom": "^26.0.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"tsup": "^8.3.5",
+		"typescript": "^5.7.3",
+		"uplot": "^1.6.31",
+		"vitest": "^3.0.2"
+	},
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
+	}
+}

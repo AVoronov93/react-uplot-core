@@ -1,0 +1,41 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 100,
+		"lineEnding": "lf"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"noForEach": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "warn"
+			}
+		}
+	},
+	"files": {
+		"ignore": [
+			"**/dist/**",
+			"**/coverage/**",
+			"**/node_modules/**",
+			"**/storybook-static/**",
+			"**/playwright-report/**",
+			"**/test-results/**",
+			"**/*.tsbuildinfo",
+			"packages/benchmarks/results/**",
+			"docs/media/**"
+		]
+	}
+}

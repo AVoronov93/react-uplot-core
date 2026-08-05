@@ -1,0 +1,32 @@
+{
+	"name": "@ruplot/examples",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./demos/registry": "./src/demos/registry.ts",
+		"./demos/*": "./src/demos/*"
+	},
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"capture:gif": "node ./scripts/capture-streaming-gif.mjs",
+		"capture:gif:large": "node ./scripts/capture-large-gif.mjs",
+		"capture:gif:all": "node ./scripts/capture-streaming-gif.mjs && node ./scripts/capture-large-gif.mjs"
+	},
+	"dependencies": {
+		"@ruplot/react": "workspace:*",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"uplot": "^1.6.31"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.50.0",
+		"@vitejs/plugin-react": "^4.3.4",
+		"gifenc": "^1.0.3",
+		"pngjs": "^7.0.0",
+		"typescript": "^5.7.3",
+		"vite": "^6.0.7"
+	}
+}

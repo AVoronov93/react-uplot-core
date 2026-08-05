@@ -1,0 +1,22 @@
+{
+	"name": "@ruplot/experiments",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"description": "Post-v1 experiments: OffscreenCanvas probe + reference Worker script (data Worker client lives in @ruplot/core)",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc -p tsconfig.json --noEmit"
+	},
+	"dependencies": {
+		"@ruplot/core": "workspace:*"
+	},
+	"devDependencies": {
+		"jsdom": "^26.0.0",
+		"typescript": "^5.7.3",
+		"vitest": "^3.0.2"
+	}
+}

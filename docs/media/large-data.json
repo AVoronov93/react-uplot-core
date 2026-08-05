@@ -1,0 +1,19 @@
+{
+  "points": 10000000,
+  "pointsLabel": "10,000,000",
+  "mountMs": "2376",
+  "static": {
+    "width": 772,
+    "height": 572,
+    "bytes": 550033,
+    "frames": 20
+  },
+  "dynamic": {
+    "width": 772,
+    "height": 572,
+    "bytes": 1911815,
+    "frames": 90,
+    "unique": 90
+  },
+  "generatedAt": "2026-08-04T20:53:32.693Z"
+}

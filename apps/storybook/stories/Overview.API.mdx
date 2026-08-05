@@ -1,0 +1,1218 @@
+import { Meta } from "@storybook/blocks";
+
+<Meta title="01 Overview/API" />
+
+# @ruplot/react API
+
+Production React 19 bindings for uPlot. Everything below is importable from `@ruplot/react`
+(snapshot types and helpers are re-exported from `@ruplot/core`).
+
+## Install
+
+```bash
+pnpm add @ruplot/react uplot
+```
+
+```ts
+import "uplot/dist/uPlot.min.css";
+import {
+  Chart,
+  useCursor,
+  useScales,
+  type CursorSnapshot,
+} from "@ruplot/react";
+```
+
+---
+
+## Bundle size
+
+ESM, peers external (after package builds; not minified — wire ≈ gzip):
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>ESM raw</th>
+      <th>gzip</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">@ruplot/core</code></td>
+      <td>21.4 KiB</td>
+      <td>5.4 KiB</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">@ruplot/react</code></td>
+      <td>18.5 KiB</td>
+      <td>4.5 KiB</td>
+    </tr>
+    <tr>
+      <td><strong>both in an app</strong></td>
+      <td><strong>~40 KiB</strong></td>
+      <td><strong>~10 KiB</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+Peers (<code className="doc-type">react</code>, <code className="doc-type">react-dom</code>, <code className="doc-type">uplot</code>) not included. Soft CI: react ESM &lt; 32 KiB (<code className="doc-type">pnpm size</code>).
+
+---
+
+## 1. Chart
+
+Declarative mount. Prop updates go through the [option classifier](#6-update-classifier)
+(`setData` / `setSize` / `setScale` / `patchSeries` / recreate).
+
+```tsx
+const options = useMemo(
+  () => ({
+    width: 720,
+    height: 260,
+    series: [{}, { label: "Signal", stroke: "#0ea5e9", width: 2 }],
+    scales: { x: { time: false } },
+  }),
+  [],
+);
+
+<Chart data={data} options={options} />
+```
+
+### Props
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">data</code></td>
+      <td><code className="doc-type">uPlot.AlignedData</code></td>
+      <td>—</td>
+      <td>Required. Prefer stable typed arrays on hot paths.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">options</code></td>
+      <td><code className="doc-type">uPlot.Options</code></td>
+      <td>—</td>
+      <td>
+        Keep a stable reference when possible (
+        <code className="doc-type">useMemo</code> / module scope).
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">resetScales</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td>—</td>
+      <td>
+        When <code className="doc-type">false</code>,{" "}
+        <code className="doc-type">setData</code> keeps scale ranges. Prefer{" "}
+        <code className="doc-type">streaming</code> for the full policy.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">streaming</code></td>
+      <td>
+        <code className="doc-type">{"boolean | StreamingMode"}</code>
+      </td>
+      <td>—</td>
+      <td>
+        <code className="doc-type">true</code> ≡{" "}
+        <code className="doc-type">{"{ enabled: true, resetScales: false, follow: true }"}</code>
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">plugins</code></td>
+      <td><code className="doc-type">RuplotPlugin[]</code></td>
+      <td>—</td>
+      <td>
+        Stable array (module-level or <code className="doc-type">usePlugin</code>).
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">dataPlane</code></td>
+      <td><code className="doc-type">{"DataPlane | null"}</code></td>
+      <td>—</td>
+      <td>
+        Dual-read plane (<code className="doc-type">dualData</code>) for tooltips /
+        source values.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">sync</code></td>
+      <td>
+        <code className="doc-type">{"ChartSyncProps | false"}</code>
+      </td>
+      <td>inherit</td>
+      <td>
+        Cursor sync; inherits{" "}
+        <code className="doc-type">{"<Chart.SyncGroup>"}</code> when omitted.
+        Pass <code className="doc-type">false</code> to opt out.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">className</code> / <code className="doc-type">style</code></td>
+      <td>—</td>
+      <td>—</td>
+      <td>On the chart wrapper.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">onReady</code></td>
+      <td>
+        <code className="doc-type">{"(u: uPlot) => void"}</code>
+      </td>
+      <td>—</td>
+      <td>After mount / recreate.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">children</code></td>
+      <td><code className="doc-type">ReactNode</code></td>
+      <td>—</td>
+      <td>
+        Composition slots — see{" "}
+        <a href="#3-composition">3. Composition</a>.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+#### `streaming` object fields (`StreamingMode`)
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">enabled</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td>—</td>
+      <td>Turns streaming policy on.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">resetScales</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">false</code></td>
+      <td>When enabled, setData preserves zoom by default.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">follow</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">true</code></td>
+      <td>After setData, point x-scale at first…last sample.</td>
+    </tr>
+  </tbody>
+</table>
+
+#### `sync` object fields (`ChartSyncProps`)
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">group</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>Logical sync group id (overrides SyncGroup context).</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">key</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>uPlot <code className="doc-type">cursor.sync.key</code> (defaults to group / context).</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">setSeries</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td>Sync series show/focus across peers.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Ref (`ChartRef` / `ChartHandle`)
+
+```tsx
+const ref = useRef<ChartRef>(null);
+ref.current?.getInstance(); // uPlot | null
+ref.current?.session;       // ChartSession (stores, apply, …)
+```
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Member</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">getInstance()</code></td>
+      <td><code className="doc-type">{"() => uPlot | null"}</code></td>
+      <td>Live instance; null before ready / after unmount.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">session</code></td>
+      <td><code className="doc-type">ChartSession</code></td>
+      <td>Command bus + external stores.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Slots on `Chart`
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Slot</th>
+      <th>Same as</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">Chart.Plot</code></td>
+      <td><code className="doc-type">Chart</code></td>
+      <td>Alias</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">Chart.Brush</code></td>
+      <td><code className="doc-type">Brush</code></td>
+      <td>Controlled x-range / grips</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">Chart.Tooltip</code></td>
+      <td><code className="doc-type">Tooltip</code></td>
+      <td>Positioning shell</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">Chart.SyncGroup</code></td>
+      <td><code className="doc-type">SyncGroup</code></td>
+      <td>Cursor sync boundary</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 2. Hooks
+
+All chart hooks (except sync-group helpers) **must run under `<Chart>`** (or `Chart.Plot`).
+Store hooks use `useSyncExternalStore` — selecting a slice re-renders **only that subscriber**, not the canvas tree.
+
+### Selector pattern
+
+Every store hook is overloaded:
+
+```ts
+useCursor(): CursorSnapshot
+useCursor<T>(selector: (snap: CursorSnapshot) => T): T
+```
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">selector?</code></td>
+      <td>
+        <code className="doc-type">{"(snap) => T"}</code>
+      </td>
+      <td>identity</td>
+      <td>
+        Omit to get the full snapshot. Pass a selector to return a slice
+        (e.g. <code className="doc-type">c =&gt; c.idx</code>). Comparison is{" "}
+        <code className="doc-type">Object.is</code> on the selected value —
+        prefer primitives / stable refs, not fresh objects each call.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+```tsx
+// Full snapshot — re-render when any cursor field changes
+const cursor = useCursor();
+
+// Narrow — re-render only when idx changes
+const idx = useCursor((c) => c.idx);
+
+// Several fields without allocating a new object every time:
+const left = useCursor((c) => c.left);
+const top = useCursor((c) => c.top);
+```
+
+---
+
+### `useUPlot()`
+
+Imperative handle — **no store subscription / no re-renders**.
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Returns</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">getInstance</code></td>
+      <td><code className="doc-type">{"() => uPlot | null"}</code></td>
+      <td>Same as ref</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">session</code></td>
+      <td><code className="doc-type">ChartSession</code></td>
+      <td><code className="doc-type">session.apply</code>, <code className="doc-type">session.stores</code>, …</td>
+    </tr>
+  </tbody>
+</table>
+
+```tsx
+const { getInstance, session } = useUPlot();
+getInstance()?.setScale("x", { min, max });
+```
+
+---
+
+### `useCursor(selector?)`
+
+Cursor store → `CursorSnapshot`.
+
+The React snapshot is intentionally lean: <strong>position + indices</strong>. Values stay in your
+<code className="doc-type">data</code> arrays — the store does not copy series Y on every move.
+
+#### Snapshot fields (`useCursor`)
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">idx</code></td>
+      <td><code className="doc-type">{"number | null"}</code></td>
+      <td>Shared nearest data index; <code className="doc-type">null</code> when idle / off-plot.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">idxs</code></td>
+      <td><code className="doc-type">{"readonly (number | null)[] | null"}</code></td>
+      <td>
+        Per-series nearest indices (can diverge across gaps). Read values with{" "}
+        <code className="doc-type">{"data[s][idxs[s]]"}</code>.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">left</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Cursor x in plot CSS px (uPlot). Idle sentinel ≈ <code className="doc-type">-10</code>.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">top</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Cursor y in plot CSS px. Idle sentinel ≈ <code className="doc-type">-10</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+#### What is <em>not</em> on the snapshot (how to get it)
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Need</th>
+      <th>How</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Series Y / X values at the cursor</td>
+      <td>
+        Prefer <code className="doc-type">{"data[s][idxs?.[s] ?? idx]"}</code>
+        {" "}(or <code className="doc-type">dataPlane.getSource</code>).
+      </td>
+    </tr>
+    <tr>
+      <td>Data-space coords from pixel position</td>
+      <td>
+        <code className="doc-type">{"getInstance()?.posToVal(left, \"x\")"}</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Native cursor extras (event, points, …)</td>
+      <td>
+        Full uPlot cursor:{" "}
+        <code className="doc-type">{"getInstance()?.cursor"}</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+```tsx
+const { idx, idxs } = useCursor();
+const sineIdx = idxs?.[1] ?? idx;
+const y = sineIdx == null ? null : (data[1] as number[])[sineIdx];
+```
+
+---
+
+### `useScales(selector?)`
+
+Scale ranges → `ScalesSnapshot` (`Record<string, ScaleRange>`).
+
+#### `ScaleRange` fields
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">min</code></td>
+      <td><code className="doc-type">{"number | null"}</code></td>
+      <td>Current scale minimum.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">max</code></td>
+      <td><code className="doc-type">{"number | null"}</code></td>
+      <td>Current scale maximum.</td>
+    </tr>
+  </tbody>
+</table>
+
+Keys match uPlot scale keys (`"x"`, `"y"`, custom).
+
+```tsx
+const scales = useScales();                 // all scales
+const x = useScales((s) => s.x);            // { min, max } | undefined
+const xMin = useScales((s) => s.x?.min);    // number | null | undefined
+```
+
+---
+
+### `useSeries(selector?)`
+
+Series show / focus → `SeriesVisibilitySnapshot`.
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">show</code></td>
+      <td><code className="doc-type">readonly boolean[]</code></td>
+      <td>Per-series visibility (index aligns with <code className="doc-type">options.series</code>).</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">focus</code></td>
+      <td><code className="doc-type">{"readonly (boolean | undefined)[]"}</code></td>
+      <td>Per-series focus (legend / cursor focus).</td>
+    </tr>
+  </tbody>
+</table>
+
+```tsx
+const visible = useSeries((s) => s.show[1]); // series 1 shown?
+```
+
+---
+
+### `useSelection(selector?)`
+
+uPlot select rect → `SelectSnapshot` (drag-select / brush mirror).
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">left</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Select rect left in plot CSS px.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">top</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Select rect top.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">width</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Select width (<code className="doc-type">0</code> when cleared).</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">height</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Select height.</td>
+    </tr>
+  </tbody>
+</table>
+
+```tsx
+const hasBand = useSelection((s) => s.width > 0);
+```
+
+---
+
+### `useSync(selector?)`
+
+This chart’s sync membership → `SyncSnapshot`.
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">group</code></td>
+      <td><code className="doc-type">{"string | null"}</code></td>
+      <td>Logical sync group id, or null if not synced.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">peerIds</code></td>
+      <td><code className="doc-type">readonly string[]</code></td>
+      <td>Peer chart ids currently in the group.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+### `usePlugin(key, init, deps?, uplot?)`
+
+Stable `RuplotPlugin` identity across renders (avoids recreate storms).
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">key</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>—</td>
+      <td>Stable plugin key for PluginRuntime diffing.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">init</code></td>
+      <td>
+        <code className="doc-type">{"(ctx) => cleanup | void"}</code>
+      </td>
+      <td>—</td>
+      <td>
+        Runs after ready / recreate. Return a disposer for DOM teardown.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">deps</code></td>
+      <td><code className="doc-type">DependencyList</code></td>
+      <td><code className="doc-type">[]</code></td>
+      <td>When these change, a new plugin object is memoized (new identity).</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">uplot?</code></td>
+      <td><code className="doc-type">uPlot.Plugin</code></td>
+      <td>—</td>
+      <td>Optional native uPlot plugin slot merged into options.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Returns:** `RuplotPlugin`
+
+```tsx
+const badge = usePlugin(
+  "corner-badge",
+  ({ u }) => {
+    const el = document.createElement("div");
+    u.root.appendChild(el);
+    return () => el.remove();
+  },
+  [],
+);
+
+<Chart plugins={[badge]} … />
+```
+
+---
+
+### `useSyncGroup(groupId?)` / `useSyncGroupContext()`
+
+Sync-group helpers — **do not require** being under `<Chart>`; typically used under / with `<Chart.SyncGroup>`.
+
+#### `useSyncGroupContext()`
+
+**Returns:** `SyncGroupContextValue | null`
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">id</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>Logical group id</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">key</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>Current uPlot <code className="doc-type">cursor.sync.key</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">setSeries</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td>Sync series show/focus</td>
+    </tr>
+  </tbody>
+</table>
+
+#### `useSyncGroup(groupId?)`
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">groupId?</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>nearest context</td>
+      <td>Target another group; omit to use SyncGroup context.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Returns:** `SyncGroupHandle`
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">id</code></td>
+      <td><code className="doc-type">{"string | null"}</code></td>
+      <td>Active group id</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">key</code></td>
+      <td><code className="doc-type">{"string | null"}</code></td>
+      <td>Active sync key</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">peerIds</code></td>
+      <td><code className="doc-type">readonly string[]</code></td>
+      <td>Live peer list (subscribed)</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">rebind(nextKey)</code></td>
+      <td><code className="doc-type">{"(string) => void"}</code></td>
+      <td>Change uPlot sync key without new group id</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 3. Composition
+
+Children of `<Chart>` (or standalone imports: `Brush`, `Tooltip`, `SyncGroup`).
+`Chart.AutoSize` observes a frame and supplies **both** `{ width, height }`; `Chart.Legend` toggles
+series without rebuilding options. `Brush` supports draggable interior bands (`panBand`) and
+vertical ranges (`orientation="y"` / `scaleKey="y"`, usually with `bindScale={false}`).
+`useCursor()` exposes lean `{ idx, idxs, left, top }` — read values from `data[s][idxs[s]]`.
+
+### `Chart.Brush`
+
+Controlled data-space range `{ min, max }`. Detail charts bind the scale; overview charts keep full history and paint grips / custom band chrome.
+
+```tsx
+const [range, setRange] = useState({ min: 120, max: 220 });
+
+<Chart data={history} options={detailOpts}>
+  <Chart.Brush value={range} onChange={setRange} />
+</Chart>
+
+<Chart data={history} options={overviewOpts}>
+  <Chart.Brush
+    value={range}
+    onChange={setRange}
+    bindScale={false}
+    grips
+    showSelect={false}
+    gripWidth={18}
+    bandClassName="frame-band"
+    gripClassName="frame-grip"
+  >
+    {/* app-owned sparkline — not a library export */}
+    <Sparkline path={minimapPath} range={range} />
+  </Chart.Brush>
+</Chart>
+```
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">value</code></td>
+      <td><code className="doc-type">{"TimeRange | null"}</code></td>
+      <td>—</td>
+      <td><code className="doc-type">{"{ min, max }"}</code> in data space.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">onChange</code></td>
+      <td><code className="doc-type">{"(range) => void"}</code></td>
+      <td>—</td>
+      <td>User zoom / grips.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">bindScale</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">true</code></td>
+      <td>
+        <code className="doc-type">false</code> on overview frame selectors.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">scaleKey</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td><code className="doc-type">"x"</code></td>
+      <td>Which scale to bind / convert.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">orientation</code></td>
+      <td><code className="doc-type">{"\"x\" | \"y\""}</code></td>
+      <td><code className="doc-type">"x"</code></td>
+      <td>Axis of the selection band / grips.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">panBand</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">false</code></td>
+      <td>Drag the band interior to move the window without resizing.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">grips</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">false</code></td>
+      <td>
+        {"Draggable edge hits. Adds classes ruplot-brush-grip--min / ruplot-brush-grip--max."}
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">showSelect</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td>{"same as "}<code className="doc-type">grips</code></td>
+      <td>
+        Native <code className="doc-type">.u-select</code>. Pass{" "}
+        <code className="doc-type">false</code> when band children / CSS own chrome.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">gripWidth</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td><code className="doc-type">8</code></td>
+      <td>Hit target width in CSS px.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">bandClassName</code> / <code className="doc-type">gripClassName</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>—</td>
+      <td>Hooks for app CSS.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">bandStyle</code> / <code className="doc-type">gripStyle</code></td>
+      <td><code className="doc-type">CSSProperties</code></td>
+      <td>—</td>
+      <td>Merged after library defaults.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">children</code></td>
+      <td><code className="doc-type">ReactNode</code></td>
+      <td>—</td>
+      <td>Inside the band (sparkline / minimap).</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">disabled</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">false</code></td>
+      <td>Skip applying value.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+### `Chart.Tooltip`
+
+Positions over `.u-over`; you own HTML (values, units, deltas, i18n).
+By default the shell <code className="doc-type">clamp</code>s the box inside the Chart wrapper
+(and flips to the left / above the cursor near the far edges). Pass{" "}
+<code className="doc-type">{"clamp={false}"}</code> only if you position manually.
+
+```tsx
+<Chart.Tooltip className="tt-shell" offset={{ x: 14, y: 10 }} clamp>
+  {({ idx, visible, left, top }) =>
+    visible && idx != null ? <Card idx={idx} /> : null
+  }
+</Chart.Tooltip>
+```
+
+#### Props
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">children</code></td>
+      <td>
+        <code className="doc-type">{"(props: TooltipRenderProps) => ReactNode"}</code>
+      </td>
+      <td>—</td>
+      <td>Render prop — required.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">offset</code></td>
+      <td><code className="doc-type">{"{ x: number; y: number }"}</code></td>
+      <td><code className="doc-type">{"{ x: 12, y: 8 }"}</code></td>
+      <td>CSS px from cursor.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">clamp</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">true</code></td>
+      <td>Keep tooltip inside the Chart wrapper; flip near edges.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">className</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>—</td>
+      <td>On the positioned wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+#### `TooltipRenderProps` (render-prop argument)
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">idx</code></td>
+      <td><code className="doc-type">{"number | null"}</code></td>
+      <td>Cursor data index.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">left</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Cursor x in plot CSS px.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">top</code></td>
+      <td><code className="doc-type">number</code></td>
+      <td>Cursor y in plot CSS px.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">style</code></td>
+      <td><code className="doc-type">CSSProperties</code></td>
+      <td>Absolute position style applied to the shell.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">visible</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td>
+        <code className="doc-type">{"idx != null"}</code> and cursor on-plot.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+### `Chart.SyncGroup`
+
+```tsx
+<Chart.SyncGroup id="plant" syncKey={key} setSeries>
+  <Chart … />
+  <Chart … />
+</Chart.SyncGroup>
+```
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">id</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td>—</td>
+      <td>Logical group id (stable across layout swaps).</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">syncKey</code></td>
+      <td><code className="doc-type">string</code></td>
+      <td><code className="doc-type">id</code></td>
+      <td>uPlot <code className="doc-type">cursor.sync.key</code>; change on fullscreen.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">setSeries</code></td>
+      <td><code className="doc-type">boolean</code></td>
+      <td><code className="doc-type">true</code></td>
+      <td>Sync series show/focus.</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">children</code></td>
+      <td><code className="doc-type">ReactNode</code></td>
+      <td>—</td>
+      <td>Charts that join this group.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 4. Helpers (from `@ruplot/core`)
+
+Re-exported so apps can import one package.
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Helper</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">{"streamingWindow({ buffer, chunk, capacity })"}</code></td>
+      <td>Fixed-capacity append / drop-oldest</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">{"seriesStepped({ stroke, … })"}</code></td>
+      <td>Stepped series options fragment</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">holdForwardGaps(yColumn)</code></td>
+      <td>Fill nulls forward for sparse feeds</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">{"dualData({ x, source, toY })"}</code></td>
+      <td>Display vs source plane</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">{"thresholdPlugin({ y, stroke, dash? })"}</code></td>
+      <td>Horizontal threshold draw</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">{"objectSeriesPaths({ get, render })"}</code></td>
+      <td>Custom path builder for event markers</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">{"createPlugin({ key, init })"}</code></td>
+      <td>Plugin factory (same lifecycle as <code className="doc-type">usePlugin</code>)</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">rebindSyncGroup(id, key)</code></td>
+      <td>Imperative sync-key rebind</td>
+    </tr>
+  </tbody>
+</table>
+
+```tsx
+setData((prev) =>
+  streamingWindow({ buffer: prev, chunk: [[t], [y]], capacity: 120 }),
+);
+<Chart data={data} streaming={{ enabled: true, follow: true }} />
+```
+
+```tsx
+const plugins = [thresholdPlugin({ y: 25, stroke: "#f97316", dash: [6, 4] })];
+<Chart data={data} options={options} plugins={plugins} />
+```
+
+---
+
+## 5. Types cheat-sheet
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Where used</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">CursorSnapshot</code></td>
+      <td><code className="doc-type">useCursor</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">ScalesSnapshot</code> / <code className="doc-type">ScaleRange</code></td>
+      <td><code className="doc-type">useScales</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">SelectSnapshot</code></td>
+      <td><code className="doc-type">useSelection</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">SeriesVisibilitySnapshot</code></td>
+      <td><code className="doc-type">useSeries</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">SyncSnapshot</code></td>
+      <td><code className="doc-type">useSync</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">TimeRange</code></td>
+      <td><code className="doc-type">Brush</code> value / onChange</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">TooltipRenderProps</code></td>
+      <td><code className="doc-type">Tooltip</code> children</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">ChartProps</code> / <code className="doc-type">ChartRef</code></td>
+      <td><code className="doc-type">{"<Chart>"}</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">StreamingMode</code> / <code className="doc-type">StreamingConfig</code></td>
+      <td><code className="doc-type">streaming</code> prop</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">RuplotPlugin</code></td>
+      <td><code className="doc-type">plugins</code> / <code className="doc-type">usePlugin</code> / <code className="doc-type">createPlugin</code></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 6. Update classifier
+
+You do not call this from app code — `<Chart>` does. Rules of thumb:
+
+<table className="doc-api-table">
+  <thead>
+    <tr>
+      <th>Change</th>
+      <th>Command</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code className="doc-type">data</code> identity / contents</td>
+      <td><code className="doc-type">setData</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">width</code> / <code className="doc-type">height</code> only</td>
+      <td><code className="doc-type">setSize</code></td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">scales.*.min/max</code> only</td>
+      <td><code className="doc-type">setScale</code></td>
+    </tr>
+    <tr>
+      <td>series visual (stroke, width, dash, fill, spanGaps)</td>
+      <td><code className="doc-type">patchSeries</code> + redraw</td>
+    </tr>
+    <tr>
+      <td>hooks identity</td>
+      <td>ignored (slotted refs — no recreate)</td>
+    </tr>
+    <tr>
+      <td>title / paths / plugins / axes / …</td>
+      <td><code className="doc-type">recreate</code> (+ runtime restore)</td>
+    </tr>
+  </tbody>
+</table>
+
+Interactive demos: **03 Updates**.
