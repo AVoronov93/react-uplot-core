@@ -7,5 +7,5 @@
 	"access": "public",
 	"baseBranch": "main",
 	"updateInternalDependencies": "patch",
-	"ignore": ["@ruplot/benchmarks", "@ruplot/examples", "@ruplot/storybook"]
+	"ignore": ["@ruplot/benchmarks", "@ruplot/examples", "@ruplot/storybook", "@ruplot/experiments"]
 }

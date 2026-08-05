@@ -26,13 +26,10 @@ if (typeof window === "undefined" || typeof HTMLCanvasElement === "undefined") {
 		arcTo() {}
 		ellipse() {}
 		rect() {}
+		roundRect() {}
 	}
 
-	(
-		globalThis as typeof globalThis & {
-			Path2D: typeof Path2DStub;
-		}
-	).Path2D = Path2DStub;
+	(globalThis as unknown as { Path2D: typeof Path2DStub }).Path2D = Path2DStub;
 
 	function createStubContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 		const state: Record<string, unknown> = {
@@ -60,7 +57,11 @@ if (typeof window === "undefined" || typeof HTMLCanvasElement === "undefined") {
 		}) as unknown as CanvasRenderingContext2D;
 	}
 
-	HTMLCanvasElement.prototype.getContext = function getContext() {
-		return createStubContext(this);
-	};
+	HTMLCanvasElement.prototype.getContext = function getContext(
+		this: HTMLCanvasElement,
+		contextId: string,
+	) {
+		if (contextId === "2d") return createStubContext(this);
+		return null;
+	} as typeof HTMLCanvasElement.prototype.getContext;
 }

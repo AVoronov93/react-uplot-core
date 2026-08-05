@@ -28,8 +28,9 @@ describe("createChartSession integration", () => {
 
 		session.apply([{ type: "patchSeries", index: 1, opts: { stroke: "#f97316" } }]);
 
-		expect(typeof instance.series[1]!.stroke).toBe("function");
-		expect(instance.series[1]!.stroke(instance, 1)).toBe("#f97316");
+		const stroke = instance.series[1]!.stroke as (u: uPlot, seriesIdx: number) => string;
+		expect(typeof stroke).toBe("function");
+		expect(stroke(instance, 1)).toBe("#f97316");
 		expect(() => instance.redraw()).not.toThrow();
 
 		session.destroy();
@@ -63,8 +64,15 @@ describe("createChartSession integration", () => {
 			},
 		]);
 
-		expect(typeof axis.values).toBe("function");
-		const sample = axis.values(instance, [1200, 1300], 1, 30, 50);
+		const values = axis.values as (
+			u: uPlot,
+			splits: number[],
+			axisIdx: number,
+			foundSpace: number,
+			foundIncr: number,
+		) => string[];
+		expect(typeof values).toBe("function");
+		const sample = values(instance, [1200, 1300], 1, 30, 50);
 		expect(sample[0]).toBe("1200.000");
 
 		session.destroy();
