@@ -63,9 +63,9 @@ export function SsrHydrateDemo({ chrome = true }: { chrome?: boolean }) {
 				</div>
 			</div>
 			<p className="panel-note">
-				<strong>How it works:</strong> on the server call <code>createChartStores()</code> and render
-				your HUD from <code>getServerSnapshot()</code> (idle cursor). Ship HTML without a canvas. On
-				the client, pass the <strong>same</strong> store instance as{" "}
+				<strong>How it works:</strong> on the server call <code>createChartStores()</code> and
+				render your HUD from <code>getServerSnapshot()</code> (idle cursor). Ship HTML without a
+				canvas. On the client, pass the <strong>same</strong> store instance as{" "}
 				<code>{"stores={stores}"}</code> — the HUD is already subscribed; mounting{" "}
 				<code>Chart</code> wires uPlot into those stores. Hover updates the HUD above without
 				recreating stores.
@@ -81,9 +81,7 @@ export function SsrHydrateDemo({ chrome = true }: { chrome?: boolean }) {
 				}}
 			>
 				<strong>Server snapshot</strong> (stable until client cursor moves):
-				<pre style={{ margin: "8px 0 0", fontSize: 12 }}>
-					{JSON.stringify(serverSnap, null, 2)}
-				</pre>
+				<pre style={{ margin: "8px 0 0", fontSize: 12 }}>{JSON.stringify(serverSnap, null, 2)}</pre>
 			</div>
 			<CursorHud stores={stores} />
 			{hydrated ? (

@@ -1,12 +1,5 @@
+import { Controls, Description, Primary, Stories, Subtitle, Title } from "@storybook/blocks";
 import type { Preview } from "@storybook/react";
-import {
-	Controls,
-	Description,
-	Primary,
-	Stories,
-	Subtitle,
-	Title,
-} from "@storybook/blocks";
 import "uplot/dist/uPlot.min.css";
 import "../../../packages/examples/src/styles.css";
 import "./preview.css";

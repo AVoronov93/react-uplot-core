@@ -108,9 +108,7 @@ describe("classifyOptions", () => {
 			nextData: dataA,
 		});
 		expect(result.kind).toBe("seriesVisual");
-		expect(result.commands).toEqual([
-			{ type: "patchSeries", index: 1, opts: { stroke: "blue" } },
-		]);
+		expect(result.commands).toEqual([{ type: "patchSeries", index: 1, opts: { stroke: "blue" } }]);
 	});
 
 	it("patches series stroke when legend is a new object with same values", () => {

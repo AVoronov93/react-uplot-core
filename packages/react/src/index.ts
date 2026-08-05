@@ -1,21 +1,25 @@
-import { Brush as BrushComponent } from "./brush.js";
 import { AutoSize as AutoSizeComponent, type AutoSizeProps } from "./auto-size.js";
+import { Brush as BrushComponent } from "./brush.js";
 import {
 	Chart as ChartComponent,
 	type ChartProps,
 	type ChartRef,
 	type ChartSyncProps,
 } from "./chart.js";
+import { Legend as LegendComponent, type LegendProps } from "./legend.js";
 import {
 	SyncGroup as SyncGroupComponent,
-	useSyncGroup,
-	useSyncGroupContext,
 	type SyncGroupContextValue,
 	type SyncGroupHandle,
 	type SyncGroupProps,
+	useSyncGroup,
+	useSyncGroupContext,
 } from "./sync-group.js";
-import { Tooltip as TooltipComponent, type TooltipProps, type TooltipRenderProps } from "./tooltip.js";
-import { Legend as LegendComponent, type LegendProps } from "./legend.js";
+import {
+	Tooltip as TooltipComponent,
+	type TooltipProps,
+	type TooltipRenderProps,
+} from "./tooltip.js";
 import { usePlugin } from "./use-plugin.js";
 
 export type { ChartProps, ChartRef, ChartSyncProps };
@@ -37,11 +41,7 @@ export {
 } from "./brush-stream-policy.js";
 export { AutoSizeComponent as AutoSize, type AutoSizeProps };
 export { LegendComponent as Legend, type LegendProps };
-export {
-	SyncGroupComponent as SyncGroup,
-	useSyncGroup,
-	useSyncGroupContext,
-};
+export { SyncGroupComponent as SyncGroup, useSyncGroup, useSyncGroupContext };
 export type { SyncGroupProps, SyncGroupHandle, SyncGroupContextValue };
 export { TooltipComponent as Tooltip, type TooltipProps, type TooltipRenderProps };
 export { usePlugin };

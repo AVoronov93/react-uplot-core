@@ -50,7 +50,10 @@ export function AutoSizeDemo({
 				>
 					{({ width, height }) => (
 						<>
-							<div className="stats" style={{ marginBottom: 8, borderBottom: "none", paddingBottom: 0 }}>
+							<div
+								className="stats"
+								style={{ marginBottom: 8, borderBottom: "none", paddingBottom: 0 }}
+							>
 								<div className="stat">
 									<span className="stat-label">width</span>
 									<span className="stat-value">{width}px</span>

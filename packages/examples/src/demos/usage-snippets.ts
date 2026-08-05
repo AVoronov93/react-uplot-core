@@ -1495,4 +1495,3 @@ export function SsrHydrateChart() {
   );
 }`,
 } as const satisfies Record<string, string>;
-

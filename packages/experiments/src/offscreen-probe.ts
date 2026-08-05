@@ -20,7 +20,8 @@ export function probeOffscreenCanvas(
 	globalObj: typeof globalThis = globalThis,
 ): OffscreenProbeResult {
 	const notes: string[] = [];
-	const offscreenCanvasCtor = typeof (globalObj as { OffscreenCanvas?: unknown }).OffscreenCanvas === "function";
+	const offscreenCanvasCtor =
+		typeof (globalObj as { OffscreenCanvas?: unknown }).OffscreenCanvas === "function";
 	if (!offscreenCanvasCtor) {
 		notes.push("OffscreenCanvas constructor missing in this realm.");
 	}

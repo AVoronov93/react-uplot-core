@@ -1,11 +1,12 @@
+import { AutoSizeDemo } from "./auto-size.js";
 import { AxisSlotsDemo } from "./axis-slots.js";
 import { BasicDemo } from "./basic.js";
-import { BrushDemo } from "./brush.js";
 import { BrushPanYDemo } from "./brush-pan-y.js";
 import { BrushStreamLockDemo } from "./brush-stream-lock.js";
+import { BrushDemo } from "./brush.js";
 import { ClassifierDemo } from "./classifier.js";
-import { CustomPluginDemo } from "./custom-plugin.js";
 import { CursorRichDemo } from "./cursor-rich.js";
+import { CustomPluginDemo } from "./custom-plugin.js";
 import { DualDataDemo } from "./dual-data.js";
 import { EventsDemo } from "./events.js";
 import { GapsSteppedDemo } from "./gaps-stepped.js";
@@ -17,7 +18,6 @@ import { LegendDemo } from "./legend.js";
 import { MultiBrushDemo } from "./multi-brush.js";
 import { PluginWorkerDemo } from "./plugin-worker.js";
 import { ResizePreserveDemo } from "./resize-preserve.js";
-import { AutoSizeDemo } from "./auto-size.js";
 import { SeriesVisualDemo } from "./series-visual.js";
 import { SsrHydrateDemo } from "./ssr-hydrate.js";
 import { StreamPolicyDemo } from "./stream-policy.js";
@@ -27,9 +27,9 @@ import { StreamingDemo } from "./streaming.js";
 import { SyncDemo } from "./sync.js";
 import { ThresholdDemo } from "./threshold.js";
 import { TooltipDemo } from "./tooltip.js";
-import { WorkerWindowDemo } from "./worker-window.js";
 import { CATEGORY_ORDER, type DemoCategory, type DemoEntry, type DemoId } from "./types.js";
 import { USAGE } from "./usage-snippets.js";
+import { WorkerWindowDemo } from "./worker-window.js";
 
 export type { DemoCategory, DemoEntry, DemoId };
 export { CATEGORY_ORDER };
@@ -88,7 +88,8 @@ export const DEMOS: readonly DemoEntry[] = [
 		id: "large-resize",
 		title: "Large + resize",
 		category: "Updates",
-		blurb: "Large series with a drag-resize frame (↘) and setScale pan; FPS shows setSize cost live.",
+		blurb:
+			"Large series with a drag-resize frame (↘) and setScale pan; FPS shows setSize cost live.",
 		why: "ResizeObserver + huge series is the production footgun — classifier keeps setSize so pan/zoom survive.",
 		pattern: USAGE["large-resize"],
 		pitfalls: ["Keep options.series stable; only width/height should change for setSize."],
@@ -128,8 +129,29 @@ export const DEMOS: readonly DemoEntry[] = [
 		],
 		Component: ClassifierDemo,
 	},
-	{ id: "series-visual", title: "Series visual patch", category: "Updates", blurb: "Patch a changing stroke without recreating the chart.", why: "Visual series updates should preserve the canvas instance and avoid flicker.", pattern: USAGE["series-visual"], pitfalls: ["Keep structural options stable.", "paths / points factories still recreate."], Component: SeriesVisualDemo },
-	{ id: "auto-size", title: "AutoSize", category: "Updates", blurb: "ResizeObserver supplies both width and height to Chart.", why: "AutoSize measures the content box; classifier routes size-only updates as setSize.", pattern: USAGE["auto-size"], pitfalls: ["Give the observed frame explicit width and height (e.g. resize: both).", "Height will not change if the frame CSS only stretches horizontally."], Component: AutoSizeDemo },
+	{
+		id: "series-visual",
+		title: "Series visual patch",
+		category: "Updates",
+		blurb: "Patch a changing stroke without recreating the chart.",
+		why: "Visual series updates should preserve the canvas instance and avoid flicker.",
+		pattern: USAGE["series-visual"],
+		pitfalls: ["Keep structural options stable.", "paths / points factories still recreate."],
+		Component: SeriesVisualDemo,
+	},
+	{
+		id: "auto-size",
+		title: "AutoSize",
+		category: "Updates",
+		blurb: "ResizeObserver supplies both width and height to Chart.",
+		why: "AutoSize measures the content box; classifier routes size-only updates as setSize.",
+		pattern: USAGE["auto-size"],
+		pitfalls: [
+			"Give the observed frame explicit width and height (e.g. resize: both).",
+			"Height will not change if the frame CSS only stretches horizontally.",
+		],
+		Component: AutoSizeDemo,
+	},
 	{
 		id: "axis-slots",
 		title: "Axis formatter slots",
@@ -195,10 +217,52 @@ export const DEMOS: readonly DemoEntry[] = [
 		],
 		Component: TooltipDemo,
 	},
-	{ id: "brush-pan-y", title: "Brush pan + Y", category: "Composition", blurb: "Pan an X overview band; Y frame selector with bindScale={false}.", why: "Grips track data min/max (Y-inverted CSS); panBand moves the window without resizing.", pattern: USAGE["brush-pan-y"], pitfalls: ["Overview / Y selectors need bindScale={false} or grips stick to the plot edges.", "Y range must sit inside the auto-scaled data extent."], Component: BrushPanYDemo },
-	{ id: "cursor-rich", title: "Per-series cursor values", category: "Composition", blurb: "useCursor() gives idx + idxs; values come from data[s][idxs[s]].", why: "Lean store avoids copying series values on every pointer move; gaps can diverge idxs per series.", pattern: USAGE["cursor-rich"], pitfalls: ["Read values from data[s][idxs[s]] — the snapshot does not include Y values."], Component: CursorRichDemo },
-	{ id: "legend", title: "Legend toggle", category: "Composition", blurb: "Toggle visibility through Chart.Legend.", why: "Visibility is an imperative series command, not an options recreation.", pattern: USAGE.legend, pitfalls: ["Keep options.legend disabled when using the React legend."], Component: LegendDemo },
-	{ id: "brush-stream-lock", title: "Brush vs stream lock", category: "Composition", blurb: "useBrushStreamPolicy spreads streaming + brush so follow XOR Brush owns X.", why: "streaming.follow and Brush both call setScale — one helper keeps a single owner.", pattern: USAGE["brush-stream-lock"], pitfalls: ["Never leave follow:true and an enabled Brush on the same X scale.", "Prefer useBrushStreamPolicy over hand-rolled inspect flags."], Component: BrushStreamLockDemo },
+	{
+		id: "brush-pan-y",
+		title: "Brush pan + Y",
+		category: "Composition",
+		blurb: "Pan an X overview band; Y frame selector with bindScale={false}.",
+		why: "Grips track data min/max (Y-inverted CSS); panBand moves the window without resizing.",
+		pattern: USAGE["brush-pan-y"],
+		pitfalls: [
+			"Overview / Y selectors need bindScale={false} or grips stick to the plot edges.",
+			"Y range must sit inside the auto-scaled data extent.",
+		],
+		Component: BrushPanYDemo,
+	},
+	{
+		id: "cursor-rich",
+		title: "Per-series cursor values",
+		category: "Composition",
+		blurb: "useCursor() gives idx + idxs; values come from data[s][idxs[s]].",
+		why: "Lean store avoids copying series values on every pointer move; gaps can diverge idxs per series.",
+		pattern: USAGE["cursor-rich"],
+		pitfalls: ["Read values from data[s][idxs[s]] — the snapshot does not include Y values."],
+		Component: CursorRichDemo,
+	},
+	{
+		id: "legend",
+		title: "Legend toggle",
+		category: "Composition",
+		blurb: "Toggle visibility through Chart.Legend.",
+		why: "Visibility is an imperative series command, not an options recreation.",
+		pattern: USAGE.legend,
+		pitfalls: ["Keep options.legend disabled when using the React legend."],
+		Component: LegendDemo,
+	},
+	{
+		id: "brush-stream-lock",
+		title: "Brush vs stream lock",
+		category: "Composition",
+		blurb: "useBrushStreamPolicy spreads streaming + brush so follow XOR Brush owns X.",
+		why: "streaming.follow and Brush both call setScale — one helper keeps a single owner.",
+		pattern: USAGE["brush-stream-lock"],
+		pitfalls: [
+			"Never leave follow:true and an enabled Brush on the same X scale.",
+			"Prefer useBrushStreamPolicy over hand-rolled inspect flags.",
+		],
+		Component: BrushStreamLockDemo,
+	},
 	{
 		id: "multi-brush",
 		title: "Multi brush",
@@ -245,9 +309,36 @@ export const DEMOS: readonly DemoEntry[] = [
 		],
 		Component: StreamingWindowDemo,
 	},
-	{ id: "stream-policy", title: "streaming prop vs streamingWindow", category: "Data", blurb: "Separate buffer updates from Chart follow policy.", why: "Data-window and viewport policy are distinct concerns.", pattern: USAGE["stream-policy"], pitfalls: ["Use imperative setData for 60Hz."], Component: StreamPolicyDemo },
-	{ id: "streaming-typed", title: "streamingWindow typed", category: "Data", blurb: "Fixed typed Float64Array window.", why: "Typed columns keep data pipelines efficient and transferable.", pattern: USAGE["streaming-typed"], pitfalls: ["Both buffer and chunk should be typed."], Component: StreamingTypedDemo },
-	{ id: "worker-window", title: "Worker window (experiments)", category: "Data", blurb: "Worker-friendly transferable typed window.", why: "Heavy window work can move off the chart paint thread.", pattern: USAGE["worker-window"], pitfalls: ["Worker URLs require bundler support."], Component: WorkerWindowDemo },
+	{
+		id: "stream-policy",
+		title: "streaming prop vs streamingWindow",
+		category: "Data",
+		blurb: "Separate buffer updates from Chart follow policy.",
+		why: "Data-window and viewport policy are distinct concerns.",
+		pattern: USAGE["stream-policy"],
+		pitfalls: ["Use imperative setData for 60Hz."],
+		Component: StreamPolicyDemo,
+	},
+	{
+		id: "streaming-typed",
+		title: "streamingWindow typed",
+		category: "Data",
+		blurb: "Fixed typed Float64Array window.",
+		why: "Typed columns keep data pipelines efficient and transferable.",
+		pattern: USAGE["streaming-typed"],
+		pitfalls: ["Both buffer and chunk should be typed."],
+		Component: StreamingTypedDemo,
+	},
+	{
+		id: "worker-window",
+		title: "Worker window (experiments)",
+		category: "Data",
+		blurb: "Worker-friendly transferable typed window.",
+		why: "Heavy window work can move off the chart paint thread.",
+		pattern: USAGE["worker-window"],
+		pitfalls: ["Worker URLs require bundler support."],
+		Component: WorkerWindowDemo,
+	},
 	{
 		id: "threshold",
 		title: "Threshold plugin",

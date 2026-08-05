@@ -8,7 +8,7 @@ import type uPlot from "uplot";
  */
 export function usePlugin(
 	key: string,
-	init: (ctx: RuplotPluginContext) => RuplotPluginCleanup | void,
+	init: (ctx: RuplotPluginContext) => RuplotPluginCleanup | undefined,
 	deps: DependencyList = [],
 	uplot?: uPlot.Plugin,
 ): RuplotPlugin {

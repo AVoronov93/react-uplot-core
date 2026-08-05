@@ -33,7 +33,10 @@ ctx.onmessage = (event: MessageEvent<WorkerRequest>) => {
 				capacity: msg.capacity,
 			});
 			const res: WorkerResponse = { id: msg.id, type: "window", columns };
-			ctx.postMessage(res, columns.map((c) => c.buffer));
+			ctx.postMessage(
+				res,
+				columns.map((c) => c.buffer),
+			);
 			return;
 		}
 	} catch (err) {

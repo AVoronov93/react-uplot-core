@@ -43,4 +43,12 @@ export default tseslint.config(
 			],
 		},
 	},
+	{
+		files: ["apps/storybook/.storybook/**/*.js"],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+		},
+	},
 );

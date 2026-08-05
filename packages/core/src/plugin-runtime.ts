@@ -21,7 +21,7 @@ export type RuplotPlugin = {
 	 */
 	uplot?: uPlot.Plugin;
 	/** DOM / subscriptions after the instance exists. Return cleanup. */
-	init?: (ctx: RuplotPluginContext) => RuplotPluginCleanup | void;
+	init?: (ctx: RuplotPluginContext) => RuplotPluginCleanup | undefined;
 };
 
 export type PluginRuntime = {
@@ -97,9 +97,7 @@ export function pluginKeysSignature(plugins: readonly RuplotPlugin[]): string {
 }
 
 /** Collect native uPlot.Plugin entries from ruplot plugins. */
-export function collectUPlotPlugins(
-	plugins: readonly RuplotPlugin[],
-): uPlot.Plugin[] {
+export function collectUPlotPlugins(plugins: readonly RuplotPlugin[]): uPlot.Plugin[] {
 	const out: uPlot.Plugin[] = [];
 	for (const plugin of plugins) {
 		if (plugin.uplot) out.push(plugin.uplot);

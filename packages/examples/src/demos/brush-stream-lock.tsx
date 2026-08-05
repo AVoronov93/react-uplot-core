@@ -1,4 +1,4 @@
-import { Chart, useBrushStreamPolicy, streamingWindow } from "@ruplot/react";
+import { Chart, streamingWindow, useBrushStreamPolicy } from "@ruplot/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type uPlot from "uplot";
 import { CHART_H, CHART_W } from "../shared/data.js";
@@ -67,6 +67,7 @@ export function BrushStreamLockDemo({
 		policy.enterInspect({ xMin, xMax });
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Storybook control seed only
 	useEffect(() => {
 		if (inspectProp) enterInspectFromData();
 		else policy.exitInspect();
@@ -89,9 +90,7 @@ export function BrushStreamLockDemo({
 	}, [policy.inspect]);
 
 	const rangeLabel =
-		policy.range != null
-			? `${policy.range.min.toFixed(0)} → ${policy.range.max.toFixed(0)}`
-			: "—";
+		policy.range != null ? `${policy.range.min.toFixed(0)} → ${policy.range.max.toFixed(0)}` : "—";
 
 	return (
 		<DemoShell chrome={chrome}>

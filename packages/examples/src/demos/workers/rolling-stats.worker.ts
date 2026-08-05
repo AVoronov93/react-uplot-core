@@ -21,8 +21,8 @@ export type RollingResponse = {
 self.onmessage = (event: MessageEvent<RollingRequest>) => {
 	const { id, y } = event.data;
 	let sumSq = 0;
-	let min = Infinity;
-	let max = -Infinity;
+	let min = Number.POSITIVE_INFINITY;
+	let max = Number.NEGATIVE_INFINITY;
 	for (let i = 0; i < y.length; i++) {
 		const v = y[i]!;
 		sumSq += v * v;
@@ -43,8 +43,7 @@ self.onmessage = (event: MessageEvent<RollingRequest>) => {
 		stride,
 	};
 	// Worker global postMessage — transfer the envelope buffer.
-	(self as unknown as { postMessage: (msg: unknown, transfer: Transferable[]) => void }).postMessage(
-		res,
-		[envelope.buffer],
-	);
+	(
+		self as unknown as { postMessage: (msg: unknown, transfer: Transferable[]) => void }
+	).postMessage(res, [envelope.buffer]);
 };

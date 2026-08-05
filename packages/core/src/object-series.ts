@@ -23,9 +23,7 @@ export type ObjectSeriesPathsOptions<T> = {
  * PathBuilder for non-numeric / object Y series.
  * Display AlignedData still needs numeric y (for scales); `get` supplies the rich payload.
  */
-export function objectSeriesPaths<T>(
-	opts: ObjectSeriesPathsOptions<T>,
-): uPlot.Series.PathBuilder {
+export function objectSeriesPaths<T>(opts: ObjectSeriesPathsOptions<T>): uPlot.Series.PathBuilder {
 	return (u, seriesIdx, idx0, idx1) => {
 		const xData = u.data[0];
 		if (!xData) return null;

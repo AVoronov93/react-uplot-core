@@ -1,5 +1,5 @@
-import { useState } from "react";
 import type { StreamingMode } from "@ruplot/core";
+import { useState } from "react";
 import type { BrushProps, TimeRange } from "./brush.js";
 
 export type BrushStreamPolicyOptions = {
@@ -37,9 +37,7 @@ export type BrushStreamPolicy = {
  * - Live: follow on, brush disabled.
  * - Inspect: follow off, brush grips/pan enabled.
  */
-export function useBrushStreamPolicy(
-	options: BrushStreamPolicyOptions = {},
-): BrushStreamPolicy {
+export function useBrushStreamPolicy(options: BrushStreamPolicyOptions = {}): BrushStreamPolicy {
 	const [inspect, setInspect] = useState(options.initialInspect ?? false);
 	const [range, setRange] = useState<TimeRange | null>(options.initialRange ?? null);
 

@@ -1,9 +1,9 @@
 import { classifyOptions, createChartSession } from "@ruplot/core";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { useMemo, useState } from "react";
-import { describe, expect, it } from "vitest";
 import type uPlot from "uplot";
-import { Chart, useBrushStreamPolicy, type TimeRange } from "./index.js";
+import { describe, expect, it } from "vitest";
+import { Chart, type TimeRange, useBrushStreamPolicy } from "./index.js";
 
 const stableBase: uPlot.Options = {
 	width: 200,
@@ -34,9 +34,7 @@ describe("composition", () => {
 			nextData: data,
 		});
 		expect(result.kind).toBe("seriesVisual");
-		expect(result.commands).toEqual([
-			{ type: "patchSeries", index: 1, opts: { stroke: "blue" } },
-		]);
+		expect(result.commands).toEqual([{ type: "patchSeries", index: 1, opts: { stroke: "blue" } }]);
 	});
 
 	it("patches stroke on toggle without remounting uPlot", () => {
@@ -79,7 +77,10 @@ describe("composition", () => {
 		};
 		const session = createChartSession({ target, options: opts, data });
 		const first = session.getInstance();
-		session.setUserAxes([{}, { label: "MW", values: (_u, splits) => splits.map((v) => v.toFixed(3)) }]);
+		session.setUserAxes([
+			{},
+			{ label: "MW", values: (_u, splits) => splits.map((v) => v.toFixed(3)) },
+		]);
 		const axis = session.getInstance()!.axes[1]!;
 		expect(session.getInstance()).toBe(first);
 		expect(axis.label).toBe("MW");

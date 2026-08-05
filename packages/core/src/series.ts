@@ -15,9 +15,7 @@ export function seriesStepped(partial: uPlot.Series = {}): uPlot.Series {
 /**
  * Forward-fill null gaps (hold last value). Common for sparse industrial feeds.
  */
-export function holdForwardGaps(
-	values: ArrayLike<number | null | undefined>,
-): (number | null)[] {
+export function holdForwardGaps(values: ArrayLike<number | null | undefined>): (number | null)[] {
 	const out: (number | null)[] = Array.from({ length: values.length }, () => null);
 	let last: number | null = null;
 	for (let i = 0; i < values.length; i++) {

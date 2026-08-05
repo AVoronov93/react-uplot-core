@@ -1,5 +1,5 @@
-import { type CSSProperties } from "react";
-import { useUPlot, useSeries } from "./hooks.js";
+import type { CSSProperties } from "react";
+import { useSeries, useUPlot } from "./hooks.js";
 
 export type LegendProps = {
 	className?: string;

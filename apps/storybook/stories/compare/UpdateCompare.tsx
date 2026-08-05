@@ -1,5 +1,13 @@
 import { Chart, type ChartRef } from "@ruplot/react";
-import { type CSSProperties, type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type CSSProperties,
+	type ReactNode,
+	type RefObject,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { UPlot } from "react-uplot";
 import type uPlot from "uplot";
 import UplotReact from "uplot-react";
@@ -111,6 +119,7 @@ function RuplotLane({ stroke }: { stroke: string }) {
 		[width, stroke],
 	);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: re-check instance identity when stroke toggles
 	useEffect(() => {
 		const u = chartRef.current?.getInstance() ?? null;
 		if (!u || !instanceEl.current) return;

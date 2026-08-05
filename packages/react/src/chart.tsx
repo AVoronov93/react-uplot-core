@@ -162,9 +162,7 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 	const syncDisabled = sync === false;
 	const groupId = syncDisabled ? null : (sync?.group ?? syncCtx?.id ?? null);
 	const syncKey = syncDisabled ? null : (sync?.key ?? syncCtx?.key ?? groupId);
-	const syncSetSeries = syncDisabled
-		? true
-		: (sync?.setSeries ?? syncCtx?.setSeries ?? true);
+	const syncSetSeries = syncDisabled ? true : (sync?.setSeries ?? syncCtx?.setSeries ?? true);
 
 	const streamingMode = normalizeStreaming(streaming);
 	const effectiveResetScales = streamingResetScales(streaming, resetScales);
@@ -293,6 +291,8 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 		effectiveResetScales,
 		streamingMode.enabled,
 		streamingMode.follow,
+		options.hooks,
+		options.axes,
 	]);
 
 	const wrapStyle: CSSProperties = {

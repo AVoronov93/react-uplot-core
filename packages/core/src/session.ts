@@ -1,11 +1,7 @@
 import uPlot from "uplot";
 import type { ApplyResult, ChartCommand, SeriesVisualPatch } from "./commands.js";
 import type { DataPlane } from "./data-plane.js";
-import {
-	type PluginRuntime,
-	type RuplotPlugin,
-	createPluginRuntime,
-} from "./plugin-runtime.js";
+import { type PluginRuntime, type RuplotPlugin, createPluginRuntime } from "./plugin-runtime.js";
 import { captureRuntimeSnapshot, restoreRuntimeSnapshot } from "./runtime-snapshot.js";
 import { type ChartStores, createChartStores } from "./stores.js";
 
@@ -52,7 +48,9 @@ type SeriesRuntime = uPlot.Series & {
 };
 
 /** uPlot normalizes stroke/fill to accessors at init — raw assigns break redraw. */
-function asSeriesAccessor<T>(value: T): (self: uPlot, seriesIdx: number) => T extends (...args: never[]) => infer R ? R : T {
+function asSeriesAccessor<T>(
+	value: T,
+): (self: uPlot, seriesIdx: number) => T extends (...args: never[]) => infer R ? R : T {
 	return (typeof value === "function" ? value : () => value) as (
 		self: uPlot,
 		seriesIdx: number,
@@ -122,11 +120,7 @@ function syncStoresFromInstance(stores: ChartStores, instance: uPlot): void {
 	stores.meta.setState({ ready: true, version: stores.meta.getSnapshot().version + 1 });
 }
 
-function attachHooks(
-	stores: ChartStores,
-	options: uPlot.Options,
-	slots: HookSlots,
-): uPlot.Options {
+function attachHooks(stores: ChartStores, options: uPlot.Options, slots: HookSlots): uPlot.Options {
 	slots.current = options.hooks;
 
 	const runUser = (name: keyof uPlot.Hooks.Arrays, u: uPlot) => {
@@ -194,7 +188,6 @@ export function createChartSession(init: ChartSessionOptions): ChartSession {
 
 	let instance: uPlot | null = null;
 	let destroyed = false;
-	let session!: ChartSession;
 
 	const bindPlugins = () => {
 		if (!instance) return;
@@ -209,10 +202,8 @@ export function createChartSession(init: ChartSessionOptions): ChartSession {
 		instance = new uPlot(attachHooks(stores, options, hookSlots), data, init.target);
 		if (snap) restoreRuntimeSnapshot(instance, snap);
 		syncStoresFromInstance(stores, instance);
-		if (session) bindPlugins();
+		bindPlugins();
 	};
-
-	create(init.options, init.data, false);
 
 	const applyOne = (command: ChartCommand): boolean => {
 		if (!instance && command.type !== "recreate") {
@@ -279,7 +270,7 @@ export function createChartSession(init: ChartSessionOptions): ChartSession {
 		}
 	};
 
-	session = {
+	const session: ChartSession = {
 		stores,
 		getInstance: () => instance,
 		dataPlane: init.dataPlane ?? null,
@@ -331,6 +322,7 @@ export function createChartSession(init: ChartSessionOptions): ChartSession {
 		},
 	};
 
+	create(init.options, init.data, false);
 	bindPlugins();
 	return session;
 }

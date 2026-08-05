@@ -32,6 +32,7 @@ export function CustomPluginDemo({
 	}, [strokeProp]);
 
 	const plugins = useMemo(() => {
+		void nonce;
 		const badgePlugin = createPlugin({
 			key: "corner-badge",
 			init({ u }) {

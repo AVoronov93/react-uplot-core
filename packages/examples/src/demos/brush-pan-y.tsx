@@ -86,8 +86,8 @@ export function BrushPanYDemo({
 	return (
 		<DemoShell chrome={chrome}>
 			<p className="panel-note">
-				<strong>Pan X:</strong> drag the overview band interior to move the window without
-				resizing it. Grips still resize.
+				<strong>Pan X:</strong> drag the overview band interior to move the window without resizing
+				it. Grips still resize.
 			</p>
 			<Chart data={data} options={detailX}>
 				<Chart.Brush value={xRange} onChange={setXRange} />
@@ -107,8 +107,8 @@ export function BrushPanYDemo({
 			<div style={{ height: 28 }} />
 			<p className="panel-note">
 				<strong>Y brush:</strong> overview keeps the full Y range with{" "}
-				<code>bindScale={false}</code>. Detail applies the selected Y window — same idea as the
-				X frame selector.
+				<code>bindScale={false}</code>. Detail applies the selected Y window — same idea as the X
+				frame selector.
 			</p>
 			<Chart data={data} options={detailY}>
 				<Chart.Brush value={yRange} onChange={setYRange} scaleKey="y" />

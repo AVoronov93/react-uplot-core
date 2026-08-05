@@ -39,7 +39,10 @@ export function AutoSize({
 			if (!entry) return;
 			const box = entry.contentBoxSize;
 			const contentBox = Array.isArray(box) ? box[0] : box;
-			update(contentBox?.inlineSize ?? entry.contentRect.width, contentBox?.blockSize ?? entry.contentRect.height);
+			update(
+				contentBox?.inlineSize ?? entry.contentRect.width,
+				contentBox?.blockSize ?? entry.contentRect.height,
+			);
 		});
 
 		observer.observe(element);

@@ -1,6 +1,5 @@
-import type uPlot from "uplot";
 import uPlotLib from "uplot";
-import { createPlugin, type RuplotPlugin } from "./plugin-runtime.js";
+import { type RuplotPlugin, createPlugin } from "./plugin-runtime.js";
 
 export type ThresholdPluginOptions = {
 	/** Override stable key (default encodes scale + y). */

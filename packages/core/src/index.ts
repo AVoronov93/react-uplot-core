@@ -1,4 +1,10 @@
-export type { ChartCommand, ApplyResult, SeriesPatch, SeriesVisualPatch, SelectRect } from "./commands.js";
+export type {
+	ChartCommand,
+	ApplyResult,
+	SeriesPatch,
+	SeriesVisualPatch,
+	SelectRect,
+} from "./commands.js";
 export type { ClassifyInput, ClassifyResult, OptionChangeKind } from "./classifier.js";
 export { classifyOptions } from "./classifier.js";
 export { dataChanged, streamingWindow, streamingWindowTransferable } from "./data.js";

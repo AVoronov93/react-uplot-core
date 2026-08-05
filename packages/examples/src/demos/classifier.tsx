@@ -27,10 +27,7 @@ export type ClassifierDemoProps = {
 	initialMode?: keyof typeof MODE_LABEL;
 };
 
-export function ClassifierDemo({
-	chrome = true,
-	initialMode = "data",
-}: ClassifierDemoProps) {
+export function ClassifierDemo({ chrome = true, initialMode = "data" }: ClassifierDemoProps) {
 	const [mode, setMode] = useState<keyof typeof MODE_LABEL>(initialMode);
 	const [flip, setFlip] = useState(false);
 	const [log, setLog] = useState<string[]>([]);
@@ -63,7 +60,8 @@ export function ClassifierDemo({
 		<DemoShell chrome={chrome}>
 			<p className="panel-note" style={{ marginBottom: 8 }}>
 				<strong>What this is:</strong> the option classifier picks the cheapest uPlot API for each
-				prop change. Pick a change type, then press Apply — watch the chart and the expected command.
+				prop change. Pick a change type, then press Apply — watch the chart and the expected
+				command.
 			</p>
 			<div className="tabs" style={{ marginBottom: 12 }}>
 				{(Object.keys(MODE_LABEL) as (keyof typeof MODE_LABEL)[]).map((m) => (
@@ -96,8 +94,8 @@ export function ClassifierDemo({
 				{mode === "title" && " — new uPlot instance (title is structural)"}
 			</p>
 			<ul className="demo-pitfalls" style={{ marginBottom: 12 }}>
-				{log.map((line, i) => (
-					<li key={`${line}-${i}`}>{line}</li>
+				{log.map((line) => (
+					<li key={line}>{line}</li>
 				))}
 			</ul>
 			<Chart data={data} options={options} />

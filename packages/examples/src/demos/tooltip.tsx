@@ -90,8 +90,8 @@ export function TooltipDemo({
 				<>
 					<p className="panel-note">
 						<strong>Custom card:</strong> <code>className</code>, <code>offset</code>, multi-series
-						rows, delta vs previous sample — all app-owned markup. By default{" "}
-						<code>clamp</code> keeps the card inside the Chart wrapper (flips near edges).
+						rows, delta vs previous sample — all app-owned markup. By default <code>clamp</code>{" "}
+						keeps the card inside the Chart wrapper (flips near edges).
 					</p>
 					<Chart
 						data={data}
@@ -100,10 +100,7 @@ export function TooltipDemo({
 							title: "Styled tooltip (full customization)",
 						}}
 					>
-						<Chart.Tooltip
-							className="tt-shell"
-							offset={{ x: offsetX, y: offsetY }}
-						>
+						<Chart.Tooltip className="tt-shell" offset={{ x: offsetX, y: offsetY }}>
 							{({ idx, visible }) => {
 								if (!visible || idx == null) return null;
 								const x = (data[0] as number[])[idx]!;
@@ -123,19 +120,14 @@ export function TooltipDemo({
 												const up = delta >= 0;
 												return (
 													<li key={s.label} className="tt-card__row">
-														<span
-															className="tt-card__swatch"
-															style={{ background: s.stroke }}
-														/>
+														<span className="tt-card__swatch" style={{ background: s.stroke }} />
 														<span className="tt-card__label">{s.label}</span>
 														<span className="tt-card__value">
 															{y.toFixed(2)}
 															<span className="tt-card__unit">{s.unit}</span>
 														</span>
 														<span
-															className={
-																up ? "tt-card__delta is-up" : "tt-card__delta is-down"
-															}
+															className={up ? "tt-card__delta is-up" : "tt-card__delta is-down"}
 														>
 															{up ? "▲" : "▼"} {Math.abs(delta).toFixed(2)}
 														</span>

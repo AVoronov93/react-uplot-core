@@ -22,14 +22,26 @@ export function SeriesVisualDemo({ chrome = true }: { chrome?: boolean }) {
 		[stroke],
 	);
 
-	return <DemoShell chrome={chrome}>
-		<div className="stats">
-			<button type="button" className="tab" onClick={() => setColorIndex((i) => (i + 1) % COLORS.length)}>
-				Change stroke
-			</button>
-			<div className="stat"><span className="stat-label">onReady mounts</span><span className="stat-value">{ready}</span></div>
-		</div>
-		<p className="panel-note"><strong>patchSeries + redraw:</strong> stroke used to recreate; now the instance stays alive — no flicker and <code>onReady</code> only once.</p>
-		<Chart data={data} options={options} onReady={() => setReady((n) => n + 1)} />
-	</DemoShell>;
+	return (
+		<DemoShell chrome={chrome}>
+			<div className="stats">
+				<button
+					type="button"
+					className="tab"
+					onClick={() => setColorIndex((i) => (i + 1) % COLORS.length)}
+				>
+					Change stroke
+				</button>
+				<div className="stat">
+					<span className="stat-label">onReady mounts</span>
+					<span className="stat-value">{ready}</span>
+				</div>
+			</div>
+			<p className="panel-note">
+				<strong>patchSeries + redraw:</strong> stroke used to recreate; now the instance stays alive
+				— no flicker and <code>onReady</code> only once.
+			</p>
+			<Chart data={data} options={options} onReady={() => setReady((n) => n + 1)} />
+		</DemoShell>
+	);
 }

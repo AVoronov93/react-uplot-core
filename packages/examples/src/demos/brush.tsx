@@ -13,8 +13,8 @@ const X_MAX = xs[xs.length - 1]!;
 
 /** Stable full-series path; window pans via viewBox (no per-drag rebuild / Y-rescale). */
 const MINIMAP_PATH = (() => {
-	let yMin = Infinity;
-	let yMax = -Infinity;
+	let yMin = Number.POSITIVE_INFINITY;
+	let yMax = Number.NEGATIVE_INFINITY;
 	for (const y of ys) {
 		if (y < yMin) yMin = y;
 		if (y > yMax) yMax = y;
@@ -41,6 +41,7 @@ function BandMinimap({ range }: { range: TimeRange }) {
 			className="brush-minimap"
 			viewBox={`${range.min} 0 ${span} 40`}
 			preserveAspectRatio="none"
+			role="presentation"
 			aria-hidden
 		>
 			<defs>
@@ -144,10 +145,7 @@ export function BrushDemo({
 			legend: { show: false },
 			series: [{}, { stroke: "rgba(148,163,184,0.35)", width: 1 }],
 			cursor: { drag: { setScale: false, x: false, y: false } },
-			axes: [
-				{ show: false },
-				{ show: false },
-			],
+			axes: [{ show: false }, { show: false }],
 		}),
 		[],
 	);
@@ -206,13 +204,11 @@ export function BrushDemo({
 										borderLeft: "none",
 										borderRight: "none",
 										borderRadius: 0,
-										boxShadow:
-											"0 0 0 1px rgba(125, 211, 252, 0.45), 0 8px 24px rgba(0,0,0,0.35)",
+										boxShadow: "0 0 0 1px rgba(125, 211, 252, 0.45), 0 8px 24px rgba(0,0,0,0.35)",
 									}}
 									gripStyle={{
 										background: "linear-gradient(180deg, #f8fafc 0%, #94a3b8 100%)",
-										boxShadow:
-											"0 0 0 1px rgba(15,23,42,0.5), 0 4px 14px rgba(56,189,248,0.35)",
+										boxShadow: "0 0 0 1px rgba(15,23,42,0.5), 0 4px 14px rgba(56,189,248,0.35)",
 									}}
 								>
 									<BandMinimap range={frame} />

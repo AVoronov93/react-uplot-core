@@ -44,12 +44,7 @@ export type SyncGroupProps = {
  * Charts inside join `SyncRegistry` and inject `cursor.sync.key` into options.
  * Pass a new `syncKey` (or call `rebind`) when the layout identity changes.
  */
-export function SyncGroup({
-	id,
-	syncKey,
-	setSeries = true,
-	children,
-}: SyncGroupProps) {
+export function SyncGroup({ id, syncKey, setSeries = true, children }: SyncGroupProps) {
 	const key = syncKey ?? id;
 
 	useLayoutEffect(() => {

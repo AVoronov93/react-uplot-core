@@ -20,10 +20,7 @@ describe("PluginRuntime", () => {
 		const u = {} as never;
 
 		runtime.sync(
-			[
-				createPlugin({ key: "a", init: initA }),
-				createPlugin({ key: "b", init: initB }),
-			],
+			[createPlugin({ key: "a", init: initA }), createPlugin({ key: "b", init: initB })],
 			{ u, session },
 		);
 

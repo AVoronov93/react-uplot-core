@@ -54,7 +54,6 @@ function notify(group: GroupRecord): void {
 
 const EMPTY_PEER_IDS: readonly string[] = [];
 
-
 export function joinSyncGroup(groupId: string, peer: SyncPeer): () => void {
 	const group = ensureGroup(groupId);
 	group.peers.set(peer.id, peer);

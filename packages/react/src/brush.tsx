@@ -1,8 +1,8 @@
 import {
 	type CSSProperties,
 	type KeyboardEvent as ReactKeyboardEvent,
-	type PointerEvent as ReactPointerEvent,
 	type ReactNode,
+	type PointerEvent as ReactPointerEvent,
 	useLayoutEffect,
 	useRef,
 	useState,
@@ -71,8 +71,8 @@ type OverlayLayout = {
 function readScaleDataExtent(instance: uPlot, scaleKey: string): { lo: number; hi: number } | null {
 	const scan = (col: uPlot.AlignedData[number] | undefined) => {
 		if (!col?.length) return null;
-		let lo = Infinity;
-		let hi = -Infinity;
+		let lo = Number.POSITIVE_INFINITY;
+		let hi = Number.NEGATIVE_INFINITY;
 		for (let i = 0; i < col.length; i++) {
 			const v = col[i];
 			if (v != null && Number.isFinite(v)) {
@@ -235,18 +235,7 @@ export function Brush({
 			minPos: orientation === "x" ? overLeft + minCss : overTop + minCss,
 			maxPos: orientation === "x" ? overLeft + maxCss : overTop + maxCss,
 		});
-	}, [
-		value,
-		disabled,
-		paintSelect,
-		grips,
-		panBand,
-		orientation,
-		scaleKey,
-		getInstance,
-		session,
-		scale,
-	]);
+	}, [value, disabled, paintSelect, grips, panBand, orientation, scaleKey, getInstance, session]);
 
 	const onPointerDown = (side: DragSide) => (e: ReactPointerEvent<HTMLDivElement>) => {
 		if (disabled || !value || !onChangeRef.current) return;
@@ -275,7 +264,6 @@ export function Brush({
 		const over = instance.root.querySelector(".u-over") as HTMLElement | null;
 		if (!over) return;
 
-		const sc = instance.scales[scaleKey];
 		const domain = gripDomain(instance, scaleKey, bindScale);
 		if (!domain) return;
 		const { lo, hi } = domain;
@@ -394,42 +382,44 @@ export function Brush({
 			>
 				{children}
 			</div>
-			{grips && <div
-				role="slider"
-				aria-label="Brush range start"
-				aria-orientation={orientation === "y" ? "vertical" : "horizontal"}
-				aria-valuemin={value?.min}
-				aria-valuemax={value?.max}
-				aria-valuenow={value?.min}
-				tabIndex={0}
-				data-side="min"
-				className={gripCls("min")}
-				style={gripBox(overlay.minPos)}
-				onPointerDown={onPointerDown("min")}
-				onPointerMove={onPointerMove}
-				onPointerUp={onPointerUp}
-				onPointerCancel={onPointerUp}
-				onKeyDown={onGripKeyDown("min")}
-			/>
-			}
-			{grips && <div
-				role="slider"
-				aria-label="Brush range end"
-				aria-orientation={orientation === "y" ? "vertical" : "horizontal"}
-				aria-valuemin={value?.min}
-				aria-valuemax={value?.max}
-				aria-valuenow={value?.max}
-				tabIndex={0}
-				data-side="max"
-				className={gripCls("max")}
-				style={gripBox(overlay.maxPos)}
-				onPointerDown={onPointerDown("max")}
-				onPointerMove={onPointerMove}
-				onPointerUp={onPointerUp}
-				onPointerCancel={onPointerUp}
-				onKeyDown={onGripKeyDown("max")}
-			/>
-			}
+			{grips && (
+				<div
+					role="slider"
+					aria-label="Brush range start"
+					aria-orientation={orientation === "y" ? "vertical" : "horizontal"}
+					aria-valuemin={value?.min}
+					aria-valuemax={value?.max}
+					aria-valuenow={value?.min}
+					tabIndex={0}
+					data-side="min"
+					className={gripCls("min")}
+					style={gripBox(overlay.minPos)}
+					onPointerDown={onPointerDown("min")}
+					onPointerMove={onPointerMove}
+					onPointerUp={onPointerUp}
+					onPointerCancel={onPointerUp}
+					onKeyDown={onGripKeyDown("min")}
+				/>
+			)}
+			{grips && (
+				<div
+					role="slider"
+					aria-label="Brush range end"
+					aria-orientation={orientation === "y" ? "vertical" : "horizontal"}
+					aria-valuemin={value?.min}
+					aria-valuemax={value?.max}
+					aria-valuenow={value?.max}
+					tabIndex={0}
+					data-side="max"
+					className={gripCls("max")}
+					style={gripBox(overlay.maxPos)}
+					onPointerDown={onPointerDown("max")}
+					onPointerMove={onPointerMove}
+					onPointerUp={onPointerUp}
+					onPointerCancel={onPointerUp}
+					onKeyDown={onGripKeyDown("max")}
+				/>
+			)}
 		</>
 	);
 }

@@ -1,5 +1,13 @@
 import { Chart, type ChartRef } from "@ruplot/react";
-import { Profiler, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+	Profiler,
+	type ReactNode,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import type uPlot from "uplot";
 import { CHART_W } from "../shared/data.js";
 import { advanceStreamBuffer, makeStreamBuffer, readPointCount } from "../shared/large-data.js";

@@ -96,7 +96,9 @@ function LaneShell({
 		>
 			<div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
 				<strong style={{ fontSize: 14 }}>{name}</strong>
-				<span style={{ fontSize: 12, fontVariantNumeric: "tabular-nums", display: "flex", gap: 10 }}>
+				<span
+					style={{ fontSize: 12, fontVariantNumeric: "tabular-nums", display: "flex", gap: 10 }}
+				>
 					<span>
 						FPS{" "}
 						<span ref={fpsEl} style={{ fontWeight: 700 }}>
@@ -148,6 +150,7 @@ function RuplotLane({ running, hz }: { running: boolean; hz: number }) {
 	};
 	const options = useMemo(() => baseOptions("@ruplot/react"), []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fps holds stable refs
 	useLayoutEffect(() => {
 		if (!running) return;
 		let raf = 0;
@@ -224,6 +227,7 @@ function BaselineLane({ running, hz }: { running: boolean; hz: number }) {
 		};
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fps holds stable refs
 	useLayoutEffect(() => {
 		if (!running) return;
 		let raf = 0;
@@ -274,6 +278,7 @@ function UplotReactLane({ running, hz }: { running: boolean; hz: number }) {
 		lastAt: useRef(performance.now()),
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fps holds stable refs
 	useLayoutEffect(() => {
 		if (!running) return;
 		let raf = 0;
@@ -328,6 +333,7 @@ function ReactUplotLane({ running, hz }: { running: boolean; hz: number }) {
 		lastAt: useRef(performance.now()),
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fps holds stable refs
 	useLayoutEffect(() => {
 		if (!running) return;
 		let raf = 0;

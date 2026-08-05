@@ -34,8 +34,7 @@ export function ResizePreserveDemo({
 		setRange(band);
 	}, [band]);
 
-	const isBand =
-		Math.abs(range.min - band.min) < 1e-9 && Math.abs(range.max - band.max) < 1e-9;
+	const isBand = Math.abs(range.min - band.min) < 1e-9 && Math.abs(range.max - band.max) < 1e-9;
 
 	const options = useMemo<uPlot.Options>(
 		() => ({
@@ -82,9 +81,12 @@ export function ResizePreserveDemo({
 				</button>
 			</div>
 			<p className="panel-note">
-				<strong>Try this:</strong> press <em>Zoom x={zoomMin}–{zoomMax}</em> (chart crops to that
-				band), then <em>Wide</em> / <em>Narrow</em> — the band stays because width is{" "}
-				<code>setSize</code>, not a full recreate. <em>Full X range</em> resets to 0–
+				<strong>Try this:</strong> press{" "}
+				<em>
+					Zoom x={zoomMin}–{zoomMax}
+				</em>{" "}
+				(chart crops to that band), then <em>Wide</em> / <em>Narrow</em> — the band stays because
+				width is <code>setSize</code>, not a full recreate. <em>Full X range</em> resets to 0–
 				{FULL.max}. Drag on the plot also zooms; buttons always set an explicit min/max (uPlot
 				cannot “clear” scales by omitting them).
 			</p>

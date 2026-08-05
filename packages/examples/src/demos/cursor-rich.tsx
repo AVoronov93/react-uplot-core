@@ -44,8 +44,7 @@ function CursorValues() {
 			</div>
 			{SERIES.map((s, i) => {
 				const seriesIdx = idxs?.[i + 1] ?? null;
-				const y =
-					seriesIdx == null ? null : (data[i + 1] as (number | null)[])[seriesIdx];
+				const y = seriesIdx == null ? null : (data[i + 1] as (number | null)[])[seriesIdx];
 				return (
 					<div className="stat" key={s.label}>
 						<span className="stat-label" style={{ color: s.stroke }}>
@@ -90,7 +89,9 @@ export function CursorRichDemo({ chrome = true }: CursorRichDemoProps) {
 	return (
 		<DemoShell chrome={chrome}>
 			<p className="panel-note">
-				<strong>What you get from <code>useCursor()</code>:</strong>{" "}
+				<strong>
+					What you get from <code>useCursor()</code>:
+				</strong>{" "}
 				<code>{"{ idx, idxs, left, top }"}</code>. <code>idx</code> is the shared cursor index;{" "}
 				<code>idxs[s]</code> is that series&apos; nearest non-null point (can differ across gaps).
 				Read values with <code>data[s][idxs[s]]</code> — the store stays allocation-light.

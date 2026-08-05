@@ -17,12 +17,7 @@ const config = {
 		viteConfig.base = base;
 		viteConfig.optimizeDeps = {
 			...viteConfig.optimizeDeps,
-			include: [
-				...(viteConfig.optimizeDeps?.include ?? []),
-				"uplot",
-				"uplot-react",
-				"react-uplot",
-			],
+			include: [...(viteConfig.optimizeDeps?.include ?? []), "uplot", "uplot-react", "react-uplot"],
 		};
 		viteConfig.resolve = {
 			...viteConfig.resolve,

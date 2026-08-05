@@ -1,10 +1,4 @@
-import {
-	type CSSProperties,
-	type ReactNode,
-	useLayoutEffect,
-	useRef,
-	useState,
-} from "react";
+import { type CSSProperties, type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useChartHandle } from "./context.js";
 import { useCursor } from "./hooks.js";
 
@@ -100,16 +94,7 @@ export function Tooltip({
 		return () => {
 			if (raf) cancelAnimationFrame(raf);
 		};
-	}, [
-		visible,
-		cursor.left,
-		cursor.top,
-		cursor.idx,
-		getInstance,
-		offset.x,
-		offset.y,
-		clamp,
-	]);
+	}, [visible, cursor.left, cursor.top, getInstance, offset.x, offset.y, clamp]);
 
 	const style: CSSProperties = {
 		position: "absolute",

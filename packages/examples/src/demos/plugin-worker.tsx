@@ -1,4 +1,4 @@
-import { Chart, createPlugin, type RuplotPlugin } from "@ruplot/react";
+import { Chart, type RuplotPlugin, createPlugin } from "@ruplot/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type uPlot from "uplot";
 import { CHART_H, CHART_W, sineSeries } from "../shared/data.js";
@@ -89,7 +89,10 @@ export function PluginWorkerDemo({ chrome = true, noise: noiseProp = 1.5 }: Plug
 	const [noise, setNoise] = useState(noiseProp);
 	const [stats, setStats] = useState<Stats | null>(null);
 	const [tick, setTick] = useState(0);
-	const data = useMemo(() => sineSeries(200, { amp: 12, noise }), [noise, tick]);
+	const data = useMemo(() => {
+		void tick;
+		return sineSeries(200, { amp: 12, noise });
+	}, [noise, tick]);
 
 	useEffect(() => {
 		setNoise(noiseProp);
@@ -98,10 +101,7 @@ export function PluginWorkerDemo({ chrome = true, noise: noiseProp = 1.5 }: Plug
 	const onStatsRef = useRef(setStats);
 	onStatsRef.current = setStats;
 
-	const plugins = useMemo(
-		() => [createWorkerStatsPlugin((s) => onStatsRef.current(s))],
-		[],
-	);
+	const plugins = useMemo(() => [createWorkerStatsPlugin((s) => onStatsRef.current(s))], []);
 
 	const options = useMemo<uPlot.Options>(
 		() => ({
