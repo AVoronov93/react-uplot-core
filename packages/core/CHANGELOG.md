@@ -1,5 +1,11 @@
 # @ruplot/core
 
+## 0.4.0
+
+### Minor Changes
+
+- 3c75914: 0.4: `@ruplot/react/compat` (UplotReact drop-in for uplot-react), `useStreamingSeries` + `useChartOptions`, dev footgun warnings for options/plugins identity thrash, sharper in-place data mutation guidance, docs for streaming happy path and 1-minute migration.
+
 ## 0.3.1
 
 ### Patch Changes

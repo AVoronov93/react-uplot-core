@@ -1,6 +1,6 @@
 {
 	"name": "@ruplot/react",
-	"version": "0.3.1",
+	"version": "0.4.0",
 	"description": "React 18+ uPlot bindings — 0 React commits on stream-60, composition API, uplot-react compat layer",
 	"type": "module",
 	"sideEffects": false,
