@@ -185,12 +185,6 @@ export function Brush({
 		const instance = getInstance();
 		if (!instance) return;
 
-		// CSS positions of the data-space edges (Y is inverted: max value → smaller top).
-		const minCss = instance.valToPos(value.min, scaleKey);
-		const maxCss = instance.valToPos(value.max, scaleKey);
-		const rangeStart = Math.min(minCss, maxCss);
-		const rangeLength = Math.max(Math.abs(maxCss - minCss), 1);
-
 		const over = instance.root.querySelector(".u-over") as HTMLElement | null;
 		const wrap = instance.root.parentElement;
 		if (!over || !wrap) {
@@ -198,43 +192,75 @@ export function Brush({
 			return;
 		}
 
-		const select =
-			orientation === "x"
-				? { left: rangeStart, top: 0, width: rangeLength, height: over.clientHeight }
-				: { left: 0, top: rangeStart, width: over.clientWidth, height: rangeLength };
+		let raf = 0;
+		const paint = () => {
+			raf = 0;
+			const u = getInstance();
+			if (!u || !value || disabled) return;
+			const overEl = u.root.querySelector(".u-over") as HTMLElement | null;
+			const wrapEl = u.root.parentElement;
+			if (!overEl || !wrapEl) {
+				setOverlay(null);
+				return;
+			}
 
-		applyingRef.current = true;
-		session.apply([
-			{
-				type: "setSelect",
-				select: paintSelect ? select : { left: 0, top: 0, width: 0, height: 0 },
-			},
-		]);
-		applyingRef.current = false;
+			const minCss = u.valToPos(value.min, scaleKey);
+			const maxCss = u.valToPos(value.max, scaleKey);
+			const rangeStart = Math.min(minCss, maxCss);
+			const rangeLength = Math.max(Math.abs(maxCss - minCss), 1);
 
-		if (!grips && !panBand) {
-			setOverlay(null);
-			return;
-		}
+			const select =
+				orientation === "x"
+					? { left: rangeStart, top: 0, width: rangeLength, height: overEl.clientHeight }
+					: { left: 0, top: rangeStart, width: overEl.clientWidth, height: rangeLength };
 
-		const wrapRect = wrap.getBoundingClientRect();
-		const overRect = over.getBoundingClientRect();
-		const overLeft = overRect.left - wrapRect.left;
-		const overTop = overRect.top - wrapRect.top;
-		const bandLeft = overLeft + (orientation === "x" ? rangeStart : 0);
-		const bandTop = overTop + (orientation === "y" ? rangeStart : 0);
+			applyingRef.current = true;
+			session.apply([
+				{
+					type: "setSelect",
+					select: paintSelect ? select : { left: 0, top: 0, width: 0, height: 0 },
+				},
+			]);
+			applyingRef.current = false;
 
-		setOverlay({
-			band: {
-				left: bandLeft,
-				top: bandTop,
-				width: orientation === "x" ? rangeLength : overRect.width,
-				height: orientation === "y" ? rangeLength : overRect.height,
-			},
-			// Grip sides track data min/max, not band CSS edges (critical for inverted Y).
-			minPos: orientation === "x" ? overLeft + minCss : overTop + minCss,
-			maxPos: orientation === "x" ? overLeft + maxCss : overTop + maxCss,
-		});
+			if (!grips && !panBand) {
+				setOverlay(null);
+				return;
+			}
+
+			const wrapRect = wrapEl.getBoundingClientRect();
+			const overRect = overEl.getBoundingClientRect();
+			const overLeft = overRect.left - wrapRect.left;
+			const overTop = overRect.top - wrapRect.top;
+
+			setOverlay({
+				band: {
+					left: overLeft + (orientation === "x" ? rangeStart : 0),
+					top: overTop + (orientation === "y" ? rangeStart : 0),
+					width: orientation === "x" ? rangeLength : overRect.width,
+					height: orientation === "y" ? rangeLength : overRect.height,
+				},
+				minPos: orientation === "x" ? overLeft + minCss : overTop + minCss,
+				maxPos: orientation === "x" ? overLeft + maxCss : overTop + maxCss,
+			});
+		};
+
+		const schedule = () => {
+			if (raf) return;
+			raf = requestAnimationFrame(paint);
+		};
+
+		paint();
+		const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(schedule) : null;
+		ro?.observe(over);
+		ro?.observe(wrap);
+		window.addEventListener("resize", schedule);
+
+		return () => {
+			if (raf) cancelAnimationFrame(raf);
+			ro?.disconnect();
+			window.removeEventListener("resize", schedule);
+		};
 	}, [value, disabled, paintSelect, grips, panBand, orientation, scaleKey, getInstance, session]);
 
 	const onPointerDown = (side: DragSide) => (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -312,24 +338,39 @@ export function Brush({
 		const domain = gripDomain(instance, scaleKey, bindScale);
 		if (!domain) return;
 		const { lo, hi } = domain;
-		const step = (hi - lo) / 50;
+		const span = hi - lo;
+		const step = span / 50;
+		const page = span / 10;
 		const backward =
 			(orientation === "x" && e.key === "ArrowLeft") ||
 			(orientation === "y" && e.key === "ArrowDown");
 		const forward =
 			(orientation === "x" && e.key === "ArrowRight") ||
 			(orientation === "y" && e.key === "ArrowUp");
-		if (!backward && !forward) return;
+		const isPageBack = e.key === "PageDown";
+		const isPageFwd = e.key === "PageUp";
+		const isHome = e.key === "Home";
+		const isEnd = e.key === "End";
+		if (!backward && !forward && !isPageBack && !isPageFwd && !isHome && !isEnd) return;
 		e.preventDefault();
-		const delta = forward ? step : -step;
+
 		let min = value.min;
 		let max = value.max;
-		if (side === "min") {
+		const delta = forward || isPageFwd ? (isPageFwd ? page : step) : isPageBack ? -page : -step;
+
+		if (isHome) {
+			if (side === "min") min = lo;
+			else max = Math.min(hi, min + step * 0.25);
+		} else if (isEnd) {
+			if (side === "max") max = hi;
+			else min = Math.max(lo, max - step * 0.25);
+		} else if (side === "min") {
 			min = Math.max(lo, Math.min(max - step * 0.25, min + delta));
 		} else {
 			max = Math.min(hi, Math.max(min + step * 0.25, max + delta));
 		}
-		if (!(min < max) || (min === value.min && max === value.max)) return;
+		if (!(min < max)) return;
+		if (min === value.min && max === value.max) return;
 		onChangeRef.current({ min, max });
 	};
 

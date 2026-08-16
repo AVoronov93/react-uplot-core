@@ -1,8 +1,11 @@
 import uPlot from "uplot";
+import type { ClassifyResult } from "./classifier.js";
 import type { ApplyResult, ChartCommand, SeriesVisualPatch } from "./commands.js";
 import type { DataPlane } from "./data-plane.js";
+import { type SessionDebugSnapshot, createSessionDebugController } from "./debug.js";
 import { type PluginRuntime, type RuplotPlugin, createPluginRuntime } from "./plugin-runtime.js";
 import { captureRuntimeSnapshot, restoreRuntimeSnapshot } from "./runtime-snapshot.js";
+import { batchStores, beginStoreBatch, endStoreBatch } from "./store.js";
 import { type ChartStores, createChartStores } from "./stores.js";
 
 export type ChartSessionOptions = {
@@ -32,6 +35,11 @@ export type ChartSession = {
 	 */
 	setUserAxes: (axes: uPlot.Options["axes"] | undefined) => void;
 	apply: (commands: readonly ChartCommand[]) => ApplyResult;
+	/** Record classifier output for debug counters / Storybook. */
+	noteClassify: (result: ClassifyResult) => void;
+	getDebugSnapshot: () => SessionDebugSnapshot;
+	setDebug: (enabled: boolean, opts?: { log?: boolean }) => void;
+	resetDebugStats: () => void;
 	destroy: () => void;
 };
 
@@ -106,18 +114,20 @@ function readScales(instance: uPlot): Record<string, { min: number | null; max: 
 }
 
 function syncStoresFromInstance(stores: ChartStores, instance: uPlot): void {
-	stores.scales.replace(readScales(instance));
-	stores.series.replace({
-		show: instance.series.map((s) => s.show !== false),
-		focus: instance.series.map(() => undefined),
+	batchStores(() => {
+		stores.scales.replace(readScales(instance));
+		stores.series.replace({
+			show: instance.series.map((s) => s.show !== false),
+			focus: instance.series.map(() => undefined),
+		});
+		stores.selection.replace({
+			left: instance.select.left,
+			top: instance.select.top,
+			width: instance.select.width,
+			height: instance.select.height,
+		});
+		stores.meta.setState({ ready: true, version: stores.meta.getSnapshot().version + 1 });
 	});
-	stores.selection.replace({
-		left: instance.select.left,
-		top: instance.select.top,
-		width: instance.select.width,
-		height: instance.select.height,
-	});
-	stores.meta.setState({ ready: true, version: stores.meta.getSnapshot().version + 1 });
 }
 
 function attachHooks(stores: ChartStores, options: uPlot.Options, slots: HookSlots): uPlot.Options {
@@ -129,11 +139,30 @@ function attachHooks(stores: ChartStores, options: uPlot.Options, slots: HookSlo
 		for (const fn of list) fn(u);
 	};
 
+	/**
+	 * Hold one store batch across uPlot hooks that fire in the same sync turn
+	 * (drag often hits setScale + setCursor + setSelect). Flush in a microtask —
+	 * no React `unstable_batchedUpdates`.
+	 */
+	let turnOpen = false;
+	const withStoreTurn = (fn: (u: uPlot) => void) => (u: uPlot) => {
+		const started = !turnOpen;
+		if (started) {
+			turnOpen = true;
+			beginStoreBatch();
+			queueMicrotask(() => {
+				turnOpen = false;
+				endStoreBatch();
+			});
+		}
+		fn(u);
+	};
+
 	return {
 		...options,
 		hooks: {
 			setCursor: [
-				(u) => {
+				withStoreTurn((u) => {
 					runUser("setCursor", u);
 					stores.cursor.setState({
 						idx: u.cursor.idx ?? null,
@@ -141,16 +170,16 @@ function attachHooks(stores: ChartStores, options: uPlot.Options, slots: HookSlo
 						left: u.cursor.left ?? -10,
 						top: u.cursor.top ?? -10,
 					});
-				},
+				}),
 			],
 			setScale: [
-				(u) => {
+				withStoreTurn((u) => {
 					runUser("setScale", u);
 					stores.scales.setState(readScales(u));
-				},
+				}),
 			],
 			setSelect: [
-				(u) => {
+				withStoreTurn((u) => {
 					runUser("setSelect", u);
 					stores.selection.setState({
 						left: u.select.left,
@@ -158,16 +187,16 @@ function attachHooks(stores: ChartStores, options: uPlot.Options, slots: HookSlo
 						width: u.select.width,
 						height: u.select.height,
 					});
-				},
+				}),
 			],
 			setSeries: [
-				(u) => {
+				withStoreTurn((u) => {
 					runUser("setSeries", u);
 					stores.series.setState({
 						show: u.series.map((s) => s.show !== false),
 						focus: u.series.map(() => undefined),
 					});
-				},
+				}),
 			],
 			ready: [(u) => runUser("ready", u)],
 			draw: [(u) => runUser("draw", u)],
@@ -188,6 +217,7 @@ export function createChartSession(init: ChartSessionOptions): ChartSession {
 
 	let instance: uPlot | null = null;
 	let destroyed = false;
+	const debug = createSessionDebugController();
 
 	const bindPlugins = () => {
 		if (!instance) return;
@@ -311,6 +341,23 @@ export function createChartSession(init: ChartSessionOptions): ChartSession {
 				recreated = applyOne(command) || recreated;
 			}
 			return { recreated, applied: commands };
+		},
+		noteClassify(result) {
+			debug.recordApply({
+				kind: result.kind,
+				reasons: result.reasons,
+				applied: result.commands,
+			});
+		},
+		getDebugSnapshot() {
+			return debug.getSnapshot();
+		},
+		setDebug(enabled, opts) {
+			debug.enabled = enabled;
+			debug.log = opts?.log ?? enabled;
+		},
+		resetDebugStats() {
+			debug.resetStats();
 		},
 		destroy() {
 			if (destroyed) return;

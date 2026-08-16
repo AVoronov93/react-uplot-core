@@ -88,4 +88,55 @@ describe("<Chart>", () => {
 		expect(host.querySelector(".uplot")).toBeNull();
 		document.body.removeChild(host);
 	});
+
+	it("hydrates into pre-created stores (SSR pattern)", async () => {
+		const { createChartStores } = await import("./index.js");
+		const { useSyncExternalStore } = await import("react");
+		const stores = createChartStores();
+		expect(stores.cursor.getServerSnapshot().idx).toBeNull();
+
+		function StoreHud() {
+			const idx = useSyncExternalStore(
+				stores.cursor.subscribe,
+				() => stores.cursor.getSnapshot().idx,
+				() => stores.cursor.getServerSnapshot().idx,
+			);
+			return <span data-testid="hud-idx">{idx ?? "idle"}</span>;
+		}
+
+		const host = document.createElement("div");
+		document.body.appendChild(host);
+		const root = createRoot(host);
+
+		// SSR shell: HUD only — getServerSnapshot → idle
+		await act(async () => {
+			root.render(<StoreHud />);
+		});
+		expect(host.querySelector("[data-testid=hud-idx]")?.textContent).toBe("idle");
+
+		// Hydrate: same store instance wired into Chart
+		await act(async () => {
+			root.render(
+				<>
+					<StoreHud />
+					<Chart data={dataA} options={stableOptions} stores={stores} />
+				</>,
+			);
+		});
+
+		expect(host.querySelector(".uplot")).not.toBeNull();
+		expect(stores.meta.getSnapshot().ready).toBe(true);
+		expect(stores.cursor.getServerSnapshot().idx).toBeNull();
+
+		await act(async () => {
+			stores.cursor.setState({ idx: 2, idxs: [null, 2], left: 8, top: 4 });
+			await Promise.resolve();
+		});
+		expect(host.querySelector("[data-testid=hud-idx]")?.textContent).toBe("2");
+
+		await act(async () => {
+			root.unmount();
+		});
+		document.body.removeChild(host);
+	});
 });

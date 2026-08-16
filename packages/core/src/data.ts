@@ -18,6 +18,49 @@ export function dataChanged(prev: uPlot.AlignedData, next: uPlot.AlignedData): b
 	return false;
 }
 
+type ColumnFingerprint = { length: number; head: number; mid: number; tail: number };
+
+const columnFingerprints = new WeakMap<object, ColumnFingerprint>();
+
+function fingerprintColumn(col: uPlot.AlignedData[number]): ColumnFingerprint | null {
+	if (col == null || typeof col !== "object") return null;
+	const length = col.length;
+	if (length === 0) return { length: 0, head: 0, mid: 0, tail: 0 };
+	const head = Number(col[0] ?? 0);
+	const mid = Number(col[length >> 1] ?? 0);
+	const tail = Number(col[length - 1] ?? 0);
+	return { length, head, mid, tail };
+}
+
+/**
+ * Dev-only: warn when an AlignedData column is mutated in place (same ref, new contents).
+ * Hot path stays reference-only via {@link dataChanged}; this is a safety net for mistakes.
+ */
+export function warnIfDataMutatedInPlace(data: uPlot.AlignedData): void {
+	if (typeof process !== "undefined" && process.env.NODE_ENV === "production") return;
+
+	for (let i = 0; i < data.length; i++) {
+		const col = data[i];
+		if (col == null || typeof col !== "object") continue;
+		const next = fingerprintColumn(col);
+		if (!next) continue;
+		const key = col as object;
+		const prev = columnFingerprints.get(key);
+		if (
+			prev &&
+			(prev.length !== next.length ||
+				prev.head !== next.head ||
+				prev.mid !== next.mid ||
+				prev.tail !== next.tail)
+		) {
+			console.warn(
+				`[ruplot] AlignedData column ${i} was mutated in place. Treat data as immutable — pass a new series reference (or use streamingWindow).`,
+			);
+		}
+		columnFingerprints.set(key, next);
+	}
+}
+
 export type StreamingWindowParams = {
 	/** Existing window columns. */
 	buffer: uPlot.AlignedData;

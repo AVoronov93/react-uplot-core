@@ -32,7 +32,8 @@ export type DemoId =
 	| "plugin-worker"
 	| "axis-slots"
 	| "multi-brush"
-	| "ssr-hydrate";
+	| "ssr-hydrate"
+	| "debug-panel";
 
 export type DemoEntry = {
 	id: DemoId;

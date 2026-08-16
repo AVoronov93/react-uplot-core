@@ -22,6 +22,8 @@ export type ClassifyInput = {
 export type ClassifyResult = {
 	kind: OptionChangeKind;
 	commands: ChartCommand[];
+	/** Human-readable triggers (especially for recreate) — for debug tooling. */
+	reasons: readonly string[];
 };
 
 /** Compared with Object.is — primitives and function refs. */
@@ -44,6 +46,12 @@ const STRUCTURAL_VALUE_KEYS = [
 	"select",
 	"drawOrder",
 ] as const;
+
+/** Series keys that patch in place (mutate + redraw). */
+export const SERIES_VISUAL_KEYS = ["stroke", "width", "dash", "fill", "spanGaps"] as const;
+
+/** Axis keys slotted via session.setUserAxes — identity changes must not recreate. */
+export const AXIS_SLOTTED_KEYS = ["values", "splits", "space", "filter", "label"] as const;
 
 function optionObjectEqual(a: unknown, b: unknown): boolean {
 	if (Object.is(a, b)) return true;
@@ -76,73 +84,73 @@ function pluginsEqual(
 	return prev.every((p, i) => p === next[i]);
 }
 
-function structuralOptionsChanged(prev: uPlot.Options, next: uPlot.Options): boolean {
+function structuralRecreateReasons(prev: uPlot.Options, next: uPlot.Options): string[] {
+	const reasons: string[] = [];
 	for (const key of STRUCTURAL_REF_KEYS) {
-		if (!Object.is(prev[key], next[key])) return true;
+		if (!Object.is(prev[key], next[key])) reasons.push(`options.${key}`);
 	}
 	for (const key of STRUCTURAL_VALUE_KEYS) {
-		if (!optionObjectEqual(prev[key], next[key])) return true;
+		if (!optionObjectEqual(prev[key], next[key])) reasons.push(`options.${key}`);
 	}
-	if (!pluginsEqual(prev.plugins, next.plugins)) return true;
-	return false;
+	if (!pluginsEqual(prev.plugins, next.plugins)) reasons.push("options.plugins");
+	return reasons;
 }
 
-/** Series keys that patch in place (mutate + redraw). */
-const SERIES_VISUAL_KEYS = ["stroke", "width", "dash", "fill", "spanGaps"] as const;
-
-/** Axis keys slotted via session.setUserAxes — identity changes must not recreate. */
-export const AXIS_SLOTTED_KEYS = ["values", "splits", "space", "filter", "label"] as const;
-
-function axesNeedsRecreate(
+function axesRecreateReasons(
 	prev: uPlot.Options["axes"] | undefined,
 	next: uPlot.Options["axes"] | undefined,
-): boolean {
-	if (prev === next) return false;
-	if (!prev || !next) return prev !== next;
-	if (prev.length !== next.length) return true;
+): string[] {
+	if (prev === next) return [];
+	if (!prev || !next) return ["options.axes"];
+	if (prev.length !== next.length) return ["options.axes.length"];
 
+	const reasons: string[] = [];
 	for (let i = 0; i < prev.length; i++) {
 		const a = prev[i];
 		const b = next[i];
 		if (a === b) continue;
-		if (!a || !b) return true;
-
+		if (!a || !b) {
+			reasons.push(`options.axes[${i}]`);
+			continue;
+		}
 		const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
 		for (const key of keys) {
 			if ((AXIS_SLOTTED_KEYS as readonly string[]).includes(key)) continue;
 			if (!Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
-				return true;
+				reasons.push(`options.axes[${i}].${key}`);
 			}
 		}
 	}
-	return false;
+	return reasons;
 }
 
-/** Series keys that still require recreate (paths/scale/points factories, …). */
-function seriesNeedsRecreate(
+function seriesRecreateReasons(
 	prev: uPlot.Options["series"] | undefined,
 	next: uPlot.Options["series"] | undefined,
-): boolean {
-	if (prev === next) return false;
-	if (!prev || !next) return prev !== next;
-	if (prev.length !== next.length) return true;
+): string[] {
+	if (prev === next) return [];
+	if (!prev || !next) return ["options.series"];
+	if (prev.length !== next.length) return ["options.series.length"];
 
+	const reasons: string[] = [];
 	for (let i = 0; i < prev.length; i++) {
 		const a = prev[i];
 		const b = next[i];
 		if (a === b) continue;
-		if (!a || !b) return true;
-
+		if (!a || !b) {
+			reasons.push(`options.series[${i}]`);
+			continue;
+		}
 		const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
 		for (const key of keys) {
 			if (key === "show" || key === "focus") continue;
 			if ((SERIES_VISUAL_KEYS as readonly string[]).includes(key)) continue;
 			if (!Object.is((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
-				return true;
+				reasons.push(`options.series[${i}].${key}`);
 			}
 		}
 	}
-	return false;
+	return reasons;
 }
 
 function collectSeriesVisualPatches(
@@ -260,34 +268,41 @@ export function classifyOptions(input: ClassifyInput): ClassifyResult {
 		return {
 			kind: "recreate",
 			commands: [{ type: "recreate", options: nextOptions, data: nextData, preserveRuntime: true }],
+			reasons: ["mount"],
 		};
 	}
 
 	if (prevOptions !== nextOptions) {
-		if (structuralOptionsChanged(prevOptions, nextOptions)) {
+		const structural = structuralRecreateReasons(prevOptions, nextOptions);
+		if (structural.length > 0) {
 			return {
 				kind: "recreate",
 				commands: [
 					{ type: "recreate", options: nextOptions, data: nextData, preserveRuntime: true },
 				],
+				reasons: structural,
 			};
 		}
 
-		if (seriesNeedsRecreate(prevOptions.series, nextOptions.series)) {
+		const seriesReasons = seriesRecreateReasons(prevOptions.series, nextOptions.series);
+		if (seriesReasons.length > 0) {
 			return {
 				kind: "recreate",
 				commands: [
 					{ type: "recreate", options: nextOptions, data: nextData, preserveRuntime: true },
 				],
+				reasons: seriesReasons,
 			};
 		}
 
-		if (axesNeedsRecreate(prevOptions.axes, nextOptions.axes)) {
+		const axisReasons = axesRecreateReasons(prevOptions.axes, nextOptions.axes);
+		if (axisReasons.length > 0) {
 			return {
 				kind: "recreate",
 				commands: [
 					{ type: "recreate", options: nextOptions, data: nextData, preserveRuntime: true },
 				],
+				reasons: axisReasons,
 			};
 		}
 
@@ -298,6 +313,7 @@ export function classifyOptions(input: ClassifyInput): ClassifyResult {
 				commands: [
 					{ type: "recreate", options: nextOptions, data: nextData, preserveRuntime: true },
 				],
+				reasons: ["options.scales (structural)"],
 			};
 		}
 		commands.push(...scaleResult.commands);
@@ -324,28 +340,28 @@ export function classifyOptions(input: ClassifyInput): ClassifyResult {
 	}
 
 	if (commands.length === 0) {
-		return { kind: "none", commands };
+		return { kind: "none", commands, reasons: [] };
 	}
 
 	const kinds = new Set(commands.map((c) => c.type));
 	if (kinds.has("setData") && kinds.size === 1) {
-		return { kind: "data", commands };
+		return { kind: "data", commands, reasons: ["data"] };
 	}
 	if (kinds.has("setScale") && ![...kinds].some((k) => k !== "setScale" && k !== "setData")) {
-		return { kind: "scales", commands };
+		return { kind: "scales", commands, reasons: ["scales.min/max"] };
 	}
 	if (kinds.has("setSeries") && ![...kinds].some((k) => k !== "setSeries" && k !== "setData")) {
-		return { kind: "seriesVisibility", commands };
+		return { kind: "seriesVisibility", commands, reasons: ["series.show/focus"] };
 	}
 	if (
 		kinds.has("patchSeries") &&
 		![...kinds].some((k) => k !== "patchSeries" && k !== "setData" && k !== "setSeries")
 	) {
-		return { kind: "seriesVisual", commands };
+		return { kind: "seriesVisual", commands, reasons: ["series.visual"] };
 	}
 	if (kinds.has("setSize")) {
-		return { kind: "size", commands };
+		return { kind: "size", commands, reasons: ["options.width/height"] };
 	}
 
-	return { kind: "data", commands };
+	return { kind: "data", commands, reasons: commands.map((c) => c.type) };
 }

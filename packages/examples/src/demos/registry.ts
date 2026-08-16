@@ -7,6 +7,7 @@ import { BrushDemo } from "./brush.js";
 import { ClassifierDemo } from "./classifier.js";
 import { CursorRichDemo } from "./cursor-rich.js";
 import { CustomPluginDemo } from "./custom-plugin.js";
+import { DebugPanelDemo } from "./debug-panel.js";
 import { DualDataDemo } from "./dual-data.js";
 import { EventsDemo } from "./events.js";
 import { GapsSteppedDemo } from "./gaps-stepped.js";
@@ -177,6 +178,19 @@ export const DEMOS: readonly DemoEntry[] = [
 			"Pass the same instance to Chart stores= after the canvas mounts.",
 		],
 		Component: SsrHydrateDemo,
+	},
+	{
+		id: "debug-panel",
+		title: "Debug panel",
+		category: "Updates",
+		blurb: "Chart debug + getDebugSnapshot — command counters and recreate reasons.",
+		why: "Classifier decisions are otherwise invisible. debug counts setData / patchSeries / recreate without putting cursor on the React commit path.",
+		pattern: USAGE["debug-panel"],
+		pitfalls: [
+			"Keep debug off in production unless you need onClassify.",
+			"Inline options that change title still recreate — that is expected.",
+		],
+		Component: DebugPanelDemo,
 	},
 	{
 		id: "brush",

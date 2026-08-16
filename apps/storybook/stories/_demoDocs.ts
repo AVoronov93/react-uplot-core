@@ -2,31 +2,38 @@ import { getDemo } from "@ruplot/examples/demos/registry";
 
 /**
  * Docs-first blurb for catalog-backed demos.
- * Replaces Storybook's useless `<FooDemo …/>` source with the real library usage snippet.
+ *
+ * Storybook 8 `source.type: "code"` means “static CSF snippet”
+ * (`<XxxDemo chrome={false} />`) — not “use this string”. Custom copy-paste
+ * lives in `source.code` + `transform` / `transformSource`.
  */
-export function demoDocs(id: string) {
-	const demo = getDemo(id)!;
+export function demoDocs(id: string, extra?: { story?: string }) {
+	const demo = getDemo(id);
+	if (!demo) {
+		throw new Error(`Unknown demo id "${id}" — add it to the examples registry`);
+	}
 	const pitfalls =
 		demo.pitfalls.length > 0
 			? `\n\n### Pitfalls\n${demo.pitfalls.map((p) => `- ${p}`).join("\n")}`
 			: "";
 
-	const code = `// Copy into your app — not the Storybook demo wrapper
-${demo.pattern}`;
+	const code = demo.pattern;
 
 	return {
 		docs: {
 			description: {
 				component: `**${demo.blurb}**\n\n### Why ruplot\n${demo.why}${pitfalls}`,
+				...(extra?.story ? { story: extra.story } : {}),
 			},
 			canvas: {
-				sourceState: "shown" as const,
+				sourceState: "hidden" as const,
 			},
 			source: {
-				type: "code" as const,
-				language: "tsx",
+				language: "tsx" as const,
 				code,
+				transform: () => code,
 			},
+			transformSource: () => code,
 		},
 	};
 }

@@ -49,7 +49,21 @@ describe("classifyOptions", () => {
 			nextData: dataA,
 		});
 		expect(result.kind).toBe("recreate");
+		expect(result.reasons).toEqual(["mount"]);
 		expect(result.commands[0]?.type).toBe("recreate");
+	});
+
+	it("includes recreate reasons for structural option keys", () => {
+		const prev = baseOptions();
+		const next = { ...prev, title: "next" };
+		const result = classifyOptions({
+			prevOptions: prev,
+			nextOptions: next,
+			prevData: dataA,
+			nextData: dataA,
+		});
+		expect(result.kind).toBe("recreate");
+		expect(result.reasons).toContain("options.title");
 	});
 
 	it("emits setSize when only dimensions change", () => {
@@ -226,6 +240,6 @@ describe("classifyOptions", () => {
 			prevData: dataA,
 			nextData: dataA,
 		});
-		expect(result).toEqual({ kind: "none", commands: [] });
+		expect(result).toEqual({ kind: "none", commands: [], reasons: [] });
 	});
 });

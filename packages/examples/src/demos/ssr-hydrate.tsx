@@ -64,11 +64,13 @@ export function SsrHydrateDemo({ chrome = true }: { chrome?: boolean }) {
 			</div>
 			<p className="panel-note">
 				<strong>How it works:</strong> on the server call <code>createChartStores()</code> and
-				render your HUD from <code>getServerSnapshot()</code> (idle cursor). Ship HTML without a
-				canvas. On the client, pass the <strong>same</strong> store instance as{" "}
-				<code>{"stores={stores}"}</code> — the HUD is already subscribed; mounting{" "}
-				<code>Chart</code> wires uPlot into those stores. Hover updates the HUD above without
-				recreating stores.
+				render your HUD with{" "}
+				<code>useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)</code> — the third
+				argument is the idle cursor. Ship HTML without a canvas. On the client, pass the{" "}
+				<strong>same</strong> store instance as <code>{"stores={stores}"}</code> — the HUD is
+				already subscribed; mounting <code>Chart</code> wires uPlot into those stores. Hover updates
+				the HUD without recreating stores. Full write-up: Storybook{" "}
+				<strong>01 Overview → API → §7 SSR</strong>.
 			</p>
 			<div
 				style={{

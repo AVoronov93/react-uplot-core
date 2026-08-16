@@ -29,6 +29,35 @@ jobs:
       - run: pnpm test
       - run: pnpm size
 
+  react-compat:
+    name: React ${{ matrix.react }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        react: ["18", "19"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Pin React ${{ matrix.react }}
+        if: matrix.react == '18'
+        run: |
+          pnpm --filter @ruplot/react add -D \
+            react@18.3.1 \
+            react-dom@18.3.1 \
+            @types/react@18.3.18 \
+            @types/react-dom@18.3.5
+      - run: pnpm build
+      - run: pnpm --filter @ruplot/core test
+      - run: pnpm --filter @ruplot/react test
+
   benchmarks:
     name: Benchmarks (hard gate)
     runs-on: ubuntu-latest

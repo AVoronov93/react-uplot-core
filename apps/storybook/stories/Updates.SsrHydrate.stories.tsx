@@ -7,7 +7,10 @@ const meta = {
 	component: SsrHydrateDemo,
 	args: { chrome: false },
 	argTypes: hideChrome,
-	parameters: demoDocs("ssr-hydrate"),
+	parameters: demoDocs("ssr-hydrate", {
+		story:
+			"Pre-create `createChartStores()`, render HUD from `getServerSnapshot` on the server, then pass the same `stores` into `<Chart stores={stores} />` on the client. See Overview → API → SSR / hydrate.",
+	}),
 } satisfies Meta<typeof SsrHydrateDemo>;
 
 export default meta;

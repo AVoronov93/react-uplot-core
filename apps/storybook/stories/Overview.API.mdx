@@ -4,8 +4,9 @@ import { Meta } from "@storybook/blocks";
 
 # @ruplot/react API
 
-Production React 19 bindings for uPlot. Everything below is importable from `@ruplot/react`
-(snapshot types and helpers are re-exported from `@ruplot/core`).
+React **18+** bindings for uPlot (19 recommended). Prefer `@ruplot/react` for app code.
+Advanced helpers: `@ruplot/react/unstable` — see the [GitHub README](https://github.com/Avoronov93/react-uplot-core#api-stability-03)
+(when to use, remount rules, migration).
 
 ## Install
 
@@ -25,6 +26,52 @@ import {
 
 ---
 
+## SSR / hydrate
+
+`createChartStores()` + `getServerSnapshot` are the hydrate contract.
+
+1. **Server:** `const stores = createChartStores()` — render HUD / chrome with
+   `useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)` (idle cursor).
+   Do **not** mount `<Chart>` on the server (no canvas).
+2. **Ship HTML** with the same store identity available on the client (module scope,
+   request cache, or serialize nothing — recreate stores only if you also recreate the HUD).
+3. **Client:** pass the **same** instance: `<Chart stores={stores} … />`.
+   Chart wires uPlot into those stores; subscribers already mounted keep working.
+
+```tsx
+const stores = createChartStores(); // share across server render + client hydrate
+
+function CursorHud() {
+  const idx = useSyncExternalStore(
+    stores.cursor.subscribe,
+    () => stores.cursor.getSnapshot().idx,
+    () => stores.cursor.getServerSnapshot().idx,
+  );
+  return <span>{idx ?? "—"}</span>;
+}
+
+// Server: <CursorHud /> + placeholder
+// Client: <CursorHud /><Chart data={data} options={options} stores={stores} />
+```
+
+Interactive: **03 Updates → SSR hydrate**.
+
+### Store batching (no React)
+
+uPlot may update cursor + scales in one turn. ruplot coalesces notifies via
+`batchStores` / a microtask turn inside the session — **not**
+`unstable_batchedUpdates`. App code can also:
+
+```ts
+import { batchStores } from "@ruplot/core";
+
+batchStores(() => {
+  stores.cursor.setState(…);
+  stores.scales.setState(…);
+});
+```
+
+---
 ## Bundle size
 
 ESM, peers external (after package builds; not minified — wire ≈ gzip):
@@ -154,6 +201,27 @@ const options = useMemo(
         Cursor sync; inherits{" "}
         <code className="doc-type">{"<Chart.SyncGroup>"}</code> when omitted.
         Pass <code className="doc-type">false</code> to opt out.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">stores</code></td>
+      <td><code className="doc-type">ChartStores</code></td>
+      <td>created internally</td>
+      <td>
+        Pre-created <code className="doc-type">createChartStores()</code> for SSR / shared HUD.
+        See <a href="#7-ssr--hydrate-pre-created-stores">§7 SSR</a>.
+      </td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">debug</code></td>
+      <td>
+        <code className="doc-type">{"boolean | ChartDebugConfig"}</code>
+      </td>
+      <td>—</td>
+      <td>
+        <code className="doc-type">true</code> ≡ <code className="doc-type">{"{ log: true }"}</code>.
+        Counters + recreate reasons via <code className="doc-type">ref.getDebugSnapshot()</code>.
+        Also <code className="doc-type">RUPLOT_DEBUG=1</code>. Demo: <strong>03 Updates → Debug panel</strong>.
       </td>
     </tr>
     <tr>
@@ -1060,9 +1128,9 @@ By default the shell <code className="doc-type">clamp</code>s the box inside the
 
 ---
 
-## 4. Helpers (from `@ruplot/core`)
+## 4. Helpers
 
-Re-exported so apps can import one package.
+### Stable (from `@ruplot/react`)
 
 <table className="doc-api-table">
   <thead>
@@ -1101,11 +1169,24 @@ Re-exported so apps can import one package.
       <td>Plugin factory (same lifecycle as <code className="doc-type">usePlugin</code>)</td>
     </tr>
     <tr>
-      <td><code className="doc-type">rebindSyncGroup(id, key)</code></td>
-      <td>Imperative sync-key rebind</td>
+      <td><code className="doc-type">createChartStores()</code></td>
+      <td>External stores for SSR / custom hosts</td>
+    </tr>
+    <tr>
+      <td><code className="doc-type">batchStores(fn)</code></td>
+      <td>
+        Coalesce store notifies (also <code className="doc-type">store.batch</code>).
+        Session already batches one uPlot turn.
+      </td>
     </tr>
   </tbody>
 </table>
+
+### Unstable (`@ruplot/react/unstable`)
+
+May change before 1.0. Includes `streamingWindowTransferable`, `createDataWorker`,
+`createDataPlane`, `rebindSyncGroup`. Details:
+[README → API stability](https://github.com/Avoronov93/react-uplot-core#api-stability-03).
 
 ```tsx
 setData((prev) =>
@@ -1164,6 +1245,10 @@ const plugins = [thresholdPlugin({ y: 25, stroke: "#f97316", dash: [6, 4] })];
       <td><code className="doc-type">{"<Chart>"}</code></td>
     </tr>
     <tr>
+      <td><code className="doc-type">SessionDebugSnapshot</code> / <code className="doc-type">ChartDebugConfig</code></td>
+      <td><code className="doc-type">debug</code> / <code className="doc-type">getDebugSnapshot</code></td>
+    </tr>
+    <tr>
       <td><code className="doc-type">StreamingMode</code> / <code className="doc-type">StreamingConfig</code></td>
       <td><code className="doc-type">streaming</code> prop</td>
     </tr>
@@ -1178,7 +1263,8 @@ const plugins = [thresholdPlugin({ y: 25, stroke: "#f97316", dash: [6, 4] })];
 
 ## 6. Update classifier
 
-You do not call this from app code — `<Chart>` does. Rules of thumb:
+You do not call this from app code — `<Chart>` does. Full remount matrix:
+[README → Mental model](https://github.com/Avoronov93/react-uplot-core#mental-model).
 
 <table className="doc-api-table">
   <thead>
@@ -1205,14 +1291,50 @@ You do not call this from app code — `<Chart>` does. Rules of thumb:
       <td><code className="doc-type">patchSeries</code> + redraw</td>
     </tr>
     <tr>
-      <td>hooks identity</td>
-      <td>ignored (slotted refs — no recreate)</td>
+      <td>hooks / axis formatters (<code className="doc-type">values</code>, <code className="doc-type">label</code>, …)</td>
+      <td>slotted — no recreate</td>
     </tr>
     <tr>
-      <td>title / paths / plugins / axes / …</td>
+      <td>title / paths / plugins / axis <code className="doc-type">side</code> / …</td>
       <td><code className="doc-type">recreate</code> (+ runtime restore)</td>
     </tr>
   </tbody>
 </table>
 
 Interactive demos: **03 Updates**.
+
+---
+
+## 7. SSR / hydrate (pre-created stores)
+
+uPlot needs a DOM target, so the **canvas is client-only**. External stores are SSR-safe:
+
+1. On the server (or in a shared module), call `createChartStores()`.
+2. Render HUD / chrome with `useSyncExternalStore(store.subscribe, getSnapshot, getServerSnapshot)`.
+3. Ship HTML **without** `<Chart>` (placeholder is fine).
+4. On the client, pass the **same** instance: `<Chart stores={stores} … />`.
+
+```tsx
+const stores = createChartStores(); // module scope or request-scoped
+
+function CursorHud() {
+  const idx = useSyncExternalStore(
+    stores.cursor.subscribe,
+    () => stores.cursor.getSnapshot().idx,
+    () => stores.cursor.getServerSnapshot().idx, // idle on server
+  );
+  return <span>{idx ?? "—"}</span>;
+}
+
+// Server: <CursorHud /> + placeholder
+// Client: <CursorHud /><Chart data={data} options={options} stores={stores} />
+```
+
+`getServerSnapshot()` never changes after create — client cursor updates only `getSnapshot()`.
+Demo: **03 Updates → SSR hydrate**.
+
+### Store batching (no React `unstable_batchedUpdates`)
+
+`@ruplot/core` exposes `batchStores` / `store.batch` (also as deprecated alias `batchUpdates`).
+Session wraps uPlot hook turns (`setCursor` + `setScale` + …) in one batch and flushes on a
+microtask — framework-agnostic, no React dependency in core.

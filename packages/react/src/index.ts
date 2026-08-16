@@ -1,3 +1,9 @@
+/**
+ * Stable public API for `@ruplot/react`.
+ *
+ * Advanced / experimental helpers live in `@ruplot/react/unstable`
+ * (or import from `@ruplot/core` directly).
+ */
 import { AutoSize as AutoSizeComponent, type AutoSizeProps } from "./auto-size.js";
 import { Brush as BrushComponent } from "./brush.js";
 import {
@@ -46,28 +52,27 @@ export type { SyncGroupProps, SyncGroupHandle, SyncGroupContextValue };
 export { TooltipComponent as Tooltip, type TooltipProps, type TooltipRenderProps };
 export { usePlugin };
 
-// Re-export production helpers so apps can import from one package.
+/** App-facing helpers (stable). Engine/advanced APIs: `@ruplot/react/unstable` or `@ruplot/core`. */
 export {
 	streamingWindow,
-	streamingWindowTransferable,
 	seriesStepped,
 	holdForwardGaps,
 	holdForwardAligned,
 	dualData,
-	createDataPlane,
 	createChartStores,
-	rebindSyncGroup,
 	thresholdPlugin,
 	objectSeriesPaths,
 	createPlugin,
-	createDataWorker,
+	batchStores,
 } from "@ruplot/core";
+/** @deprecated Use {@link batchStores}. */
+export { batchStores as batchUpdates } from "@ruplot/core";
 export type {
-	DataPlane,
 	DualDataParams,
 	StreamingWindowParams,
 	RuplotPlugin,
 	RuplotPluginContext,
+	RuplotPluginCleanup,
 	ThresholdPluginOptions,
 	ObjectSeriesPathsOptions,
 	ObjectSeriesRenderArgs,
@@ -79,10 +84,11 @@ export type {
 	SyncSnapshot,
 	StreamingConfig,
 	StreamingMode,
-	DataWorkerClient,
-	DataWorkerRequest,
-	DataWorkerResponse,
 	ChartStores,
+	DataPlane,
+	SessionDebugSnapshot,
+	SessionCommandStats,
+	ChartDebugConfig,
 } from "@ruplot/core";
 
 /**

@@ -1,4 +1,5 @@
-import { Chart, streamingWindowTransferable } from "@ruplot/react";
+import { Chart } from "@ruplot/react";
+import { streamingWindowTransferable } from "@ruplot/react/unstable";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type uPlot from "uplot";
 import { CHART_H, CHART_W } from "../shared/data.js";
@@ -40,9 +41,9 @@ export function WorkerWindowDemo({ chrome = true }: { chrome?: boolean }) {
 		<DemoShell chrome={chrome}>
 			<p className="panel-note">
 				<strong>Experiment:</strong> this working main-thread example uses{" "}
-				<code>streamingWindowTransferable</code>. <code>@ruplot/experiments</code> provides{" "}
-				<code>createDataWorker</code> when a Vite worker URL is available, moving window
-				concatenation off the paint thread.
+				<code>streamingWindowTransferable</code> from <code>@ruplot/react/unstable</code>.{" "}
+				<code>@ruplot/experiments</code> provides <code>createDataWorker</code> when a Vite worker
+				URL is available, moving window concatenation off the paint thread.
 			</p>
 			<Chart
 				data={data as uPlot.AlignedData}

@@ -2,6 +2,7 @@
  * Copy-pasteable app usage for Storybook docs (`parameters.docs.source`).
  * Keep these self-contained — readers should not need the XxxDemo wrappers.
  */
+import type { DemoId } from "./types.js";
 
 export const USAGE = {
 	basic: `import { Chart } from "@ruplot/react";
@@ -1199,7 +1200,8 @@ export function StreamingTypedChart() {
   );
 }`,
 
-	"worker-window": `import { Chart, streamingWindowTransferable } from "@ruplot/react";
+	"worker-window": `import { Chart } from "@ruplot/react";
+import { streamingWindowTransferable } from "@ruplot/react/unstable";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type uPlot from "uplot";
 
@@ -1494,4 +1496,47 @@ export function SsrHydrateChart() {
     </>
   );
 }`,
-} as const satisfies Record<string, string>;
+
+	"debug-panel": `import { Chart, type ChartRef, type SessionDebugSnapshot } from "@ruplot/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type uPlot from "uplot";
+
+export function DebugPanelChart({ data }: { data: uPlot.AlignedData }) {
+  const ref = useRef<ChartRef>(null);
+  const [stroke, setStroke] = useState("#0ea5e9");
+  const [title, setTitle] = useState("Debug panel");
+  const [snap, setSnap] = useState<SessionDebugSnapshot | null>(null);
+
+  const options = useMemo<uPlot.Options>(
+    () => ({
+      width: 720,
+      height: 260,
+      title,
+      scales: { x: { time: false } },
+      legend: { show: false },
+      series: [{}, { stroke, width: 2 }],
+    }),
+    [stroke, title],
+  );
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setSnap(ref.current?.getDebugSnapshot() ?? null);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, []);
+
+  return (
+    <>
+      <button type="button" onClick={() => setStroke((s) => (s === "#0ea5e9" ? "#f97316" : "#0ea5e9"))}>
+        Toggle stroke (patchSeries)
+      </button>
+      <button type="button" onClick={() => setTitle((t) => (t === "Debug panel" ? "Recreate me" : "Debug panel"))}>
+        Toggle title (recreate)
+      </button>
+      <pre>{JSON.stringify(snap?.stats, null, 2)}</pre>
+      <Chart ref={ref} data={data} options={options} debug />
+    </>
+  );
+}`,
+} as const satisfies Record<DemoId, string>;

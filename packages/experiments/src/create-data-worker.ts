@@ -7,7 +7,7 @@ export type {
 } from "@ruplot/core";
 
 /**
- * @deprecated Import `createDataWorker` from `@ruplot/core` or `@ruplot/react`.
+ * @deprecated Import `createDataWorker` from `@ruplot/core` or `@ruplot/react/unstable`.
  * Kept so existing `@ruplot/experiments` imports keep working.
  */
 export function createDataWorker(worker: Worker): DataWorkerClient {

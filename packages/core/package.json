@@ -28,7 +28,9 @@
 		"chart",
 		"timeseries",
 		"canvas",
-		"performance"
+		"performance",
+		"streaming",
+		"react"
 	],
 	"repository": {
 		"type": "git",
@@ -40,7 +42,7 @@
 	},
 	"homepage": "https://github.com/Avoronov93/react-uplot-core#readme",
 	"peerDependencies": {
-		"uplot": "^1.6.0"
+		"uplot": "^1.6.31"
 	},
 	"devDependencies": {
 		"tsup": "^8.3.5",

@@ -6,13 +6,31 @@ export type {
 	SelectRect,
 } from "./commands.js";
 export type { ClassifyInput, ClassifyResult, OptionChangeKind } from "./classifier.js";
-export { classifyOptions } from "./classifier.js";
-export { dataChanged, streamingWindow, streamingWindowTransferable } from "./data.js";
+export { classifyOptions, AXIS_SLOTTED_KEYS, SERIES_VISUAL_KEYS } from "./classifier.js";
+export {
+	dataChanged,
+	streamingWindow,
+	streamingWindowTransferable,
+	warnIfDataMutatedInPlace,
+} from "./data.js";
 export type { StreamingWindowParams } from "./data.js";
+export type {
+	SessionCommandStats,
+	SessionDebugSnapshot,
+	ChartDebugConfig,
+} from "./debug.js";
+export { createEmptyCommandStats, createSessionDebugController, tallyCommands } from "./debug.js";
 export type { DataPlane, DualDataParams } from "./data-plane.js";
 export { createDataPlane, dualData } from "./data-plane.js";
 export type { Store, Subscriber } from "./store.js";
-export { createStore } from "./store.js";
+export {
+	createStore,
+	batchStores,
+	beginStoreBatch,
+	endStoreBatch,
+	/** @deprecated Use {@link batchStores}. */
+	batchStores as batchUpdates,
+} from "./store.js";
 export type {
 	ChartStores,
 	CursorSnapshot,

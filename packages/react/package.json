@@ -1,7 +1,7 @@
 {
 	"name": "@ruplot/react",
 	"version": "0.2.0",
-	"description": "Benchmark-driven React 19 bindings for uPlot",
+	"description": "High-performance React 18+ bindings for uPlot — 0 React commits at 60Hz streaming",
 	"type": "module",
 	"sideEffects": false,
 	"main": "./dist/index.cjs",
@@ -12,6 +12,11 @@
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js",
 			"require": "./dist/index.cjs"
+		},
+		"./unstable": {
+			"types": "./dist/unstable.d.ts",
+			"import": "./dist/unstable.js",
+			"require": "./dist/unstable.cjs"
 		}
 	},
 	"files": [
@@ -19,7 +24,7 @@
 		"README.md"
 	],
 	"scripts": {
-		"build": "tsup src/index.ts --format esm,cjs --dts --clean --external react --external react-dom --external uplot --external @ruplot/core",
+		"build": "tsup src/index.ts src/unstable.ts --format esm,cjs --dts --clean --external react --external react-dom --external uplot --external @ruplot/core",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"test": "vitest run",
 		"size": "node ../../scripts/check-size.mjs"
@@ -29,8 +34,10 @@
 		"uplot",
 		"chart",
 		"timeseries",
-		"hooks",
-		"performance"
+		"canvas",
+		"performance",
+		"streaming",
+		"hooks"
 	],
 	"repository": {
 		"type": "git",
@@ -45,9 +52,9 @@
 		"@ruplot/core": "workspace:*"
 	},
 	"peerDependencies": {
-		"react": "^19.0.0",
-		"react-dom": "^19.0.0",
-		"uplot": "^1.6.0"
+		"react": "^18.0.0 || ^19.0.0",
+		"react-dom": "^18.0.0 || ^19.0.0",
+		"uplot": "^1.6.31"
 	},
 	"devDependencies": {
 		"@testing-library/react": "^16.1.0",

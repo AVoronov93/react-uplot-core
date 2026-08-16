@@ -1,16 +1,24 @@
-import { Controls, Description, Primary, Stories, Subtitle, Title } from "@storybook/blocks";
+import {
+	Controls,
+	Description,
+	Primary,
+	Source,
+	Stories,
+	Subtitle,
+	Title,
+} from "@storybook/blocks";
 import type { Preview } from "@storybook/react";
 import "uplot/dist/uPlot.min.css";
 import "../../../packages/examples/src/styles.css";
 import "./preview.css";
 
 /**
- * Docs-first page: description + live demo + controls.
+ * Docs-first page: description + live demo + copy-paste usage + controls.
  * CSF stories use `tags: ['!dev']` so the sidebar leaf is this docs page
  * (labeled "Demo"), not a nested Docs/Playground pair.
  *
- * Real library usage comes from `demoDocs()` → `parameters.docs.source.code`
- * (not the Storybook `<XxxDemo />` wrapper).
+ * Usage snippets come from `demoDocs()` → `parameters.docs.source.code`
+ * (never the Storybook `<XxxDemo />` wrapper).
  */
 function DemoDocsPage() {
 	return (
@@ -19,6 +27,7 @@ function DemoDocsPage() {
 			<Subtitle />
 			<Description />
 			<Primary />
+			<Source dark />
 			<Controls />
 			<Stories includePrimary={false} />
 		</>
@@ -58,6 +67,10 @@ const preview: Preview = {
 			toc: true,
 			page: DemoDocsPage,
 			defaultName: "Demo",
+			transformSource(src, context) {
+				const code = context.parameters?.docs?.source?.code;
+				return typeof code === "string" && code.trim() ? code : src;
+			},
 		},
 	},
 };

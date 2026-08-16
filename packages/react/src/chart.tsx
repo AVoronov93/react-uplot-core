@@ -1,4 +1,5 @@
 import {
+	type ChartDebugConfig,
 	type ChartSession,
 	type ChartStores,
 	type DataPlane,
@@ -12,6 +13,7 @@ import {
 	normalizeStreaming,
 	pluginKeysSignature,
 	streamingResetScales,
+	warnIfDataMutatedInPlace,
 } from "@ruplot/core";
 import {
 	type CSSProperties,
@@ -63,6 +65,11 @@ export type ChartProps = {
 	 * Optional pre-created stores (SSR / shared HUD). When omitted, Chart creates its own.
 	 */
 	stores?: ChartStores;
+	/**
+	 * Dev observability: count commands, log recreate reasons.
+	 * `true` ≡ `{ log: true }`. Also: `RUPLOT_DEBUG=1` env.
+	 */
+	debug?: boolean | ChartDebugConfig;
 	className?: string;
 	style?: CSSProperties;
 	children?: ReactNode;
@@ -139,6 +146,7 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 		streaming,
 		sync,
 		stores: storesProp,
+		debug: debugProp,
 		className,
 		style,
 		children,
@@ -157,6 +165,15 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 	pluginsRef.current = plugins;
 	const onReadyRef = useRef(onReady);
 	onReadyRef.current = onReady;
+	const debugConfigRef = useRef<ChartDebugConfig | false>(false);
+	const envDebug =
+		typeof process !== "undefined" && process.env.RUPLOT_DEBUG === "1" ? { log: true } : false;
+	debugConfigRef.current =
+		debugProp === true
+			? { log: true }
+			: debugProp === false || debugProp == null
+				? envDebug
+				: debugProp;
 
 	const syncCtx = useSyncGroupContext();
 	const syncDisabled = sync === false;
@@ -200,6 +217,25 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 						setUserHooks: () => {},
 						setUserAxes: () => {},
 						apply: () => ({ recreated: false, applied: [] }),
+						noteClassify: () => {},
+						getDebugSnapshot: () => ({
+							stats: {
+								recreate: 0,
+								setData: 0,
+								setSize: 0,
+								setScale: 0,
+								setSeries: 0,
+								patchSeries: 0,
+								setCursor: 0,
+								setSelect: 0,
+								batch: 0,
+							},
+							lastKind: null,
+							lastReasons: [],
+							lastApplied: [],
+						}),
+						setDebug: () => {},
+						resetDebugStats: () => {},
 						destroy: () => {},
 					} satisfies ChartSession;
 				}
@@ -207,6 +243,26 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 			},
 			getInstance() {
 				return sessionRef.current?.getInstance() ?? null;
+			},
+			getDebugSnapshot() {
+				return (
+					sessionRef.current?.getDebugSnapshot() ?? {
+						stats: {
+							recreate: 0,
+							setData: 0,
+							setSize: 0,
+							setScale: 0,
+							setSeries: 0,
+							patchSeries: 0,
+							setCursor: 0,
+							setSelect: 0,
+							batch: 0,
+						},
+						lastKind: null,
+						lastReasons: [],
+						lastApplied: [],
+					}
+				);
 			},
 		};
 	}
@@ -256,6 +312,13 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 		session.setUserHooks(options.hooks);
 		session.setUserAxes(options.axes);
 
+		warnIfDataMutatedInPlace(data);
+
+		const debugCfg = debugConfigRef.current;
+		session.setDebug(Boolean(debugCfg), {
+			log: debugCfg ? (debugCfg.log ?? true) : false,
+		});
+
 		const result = classifyOptions({
 			prevOptions: prevOptionsRef.current,
 			nextOptions: effectiveOptions,
@@ -263,6 +326,9 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 			nextData: data,
 			resetScales: effectiveResetScales,
 		});
+
+		session.noteClassify(result);
+		if (debugCfg) debugCfg.onClassify?.(result);
 
 		if (result.kind === "none") return;
 
