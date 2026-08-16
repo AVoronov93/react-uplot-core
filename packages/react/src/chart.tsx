@@ -25,6 +25,7 @@ import {
 } from "react";
 import type uPlot from "uplot";
 import { ChartContext, type ChartHandle } from "./context.js";
+import { warnIfOptionsIdentityThrash, warnIfPluginsIdentityThrash } from "./dev-warnings.js";
 import { useSyncGroupContext, useSyncMembership } from "./sync-group.js";
 
 export type ChartSyncProps = {
@@ -165,6 +166,8 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 	pluginsRef.current = plugins;
 	const onReadyRef = useRef(onReady);
 	onReadyRef.current = onReady;
+	const wrapHostRef = useRef<object>({});
+	const prevPluginsForWarnRef = useRef<readonly RuplotPlugin[] | null>(null);
 	const debugConfigRef = useRef<ChartDebugConfig | false>(false);
 	const envDebug =
 		typeof process !== "undefined" && process.env.RUPLOT_DEBUG === "1" ? { log: true } : false;
@@ -313,6 +316,9 @@ export const Chart = forwardRef<ChartRef, ChartProps>(function Chart(
 		session.setUserAxes(options.axes);
 
 		warnIfDataMutatedInPlace(data);
+		warnIfOptionsIdentityThrash(wrapHostRef.current, prevOptionsRef.current, effectiveOptions);
+		warnIfPluginsIdentityThrash(wrapHostRef.current, prevPluginsForWarnRef.current, plugins);
+		prevPluginsForWarnRef.current = plugins;
 
 		const debugCfg = debugConfigRef.current;
 		session.setDebug(Boolean(debugCfg), {

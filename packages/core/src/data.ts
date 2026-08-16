@@ -54,7 +54,7 @@ export function warnIfDataMutatedInPlace(data: uPlot.AlignedData): void {
 				prev.tail !== next.tail)
 		) {
 			console.warn(
-				`[ruplot] AlignedData column ${i} was mutated in place. Treat data as immutable — pass a new series reference (or use streamingWindow).`,
+				`[ruplot] AlignedData column ${i} was mutated in place. Treat columns as immutable: pass a new series reference, use streamingWindow, or useStreamingSeries().push (imperative setData). Mutating the same array and relying on React props will miss updates and trip this warning.`,
 			);
 		}
 		columnFingerprints.set(key, next);

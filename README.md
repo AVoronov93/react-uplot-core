@@ -72,7 +72,7 @@ export function App({ data }: { data: uPlot.AlignedData }) {
 
 1. Keep `options` and `data` **stable by reference** (`useMemo` / module scope).
 2. Treat `data` columns as **immutable** — new series ref (or `streamingWindow`). Dev warns on in-place mutation.
-3. **Do not** put a 60Hz buffer in `useState`. Keep it in a ref and `setData` on the instance / session.
+3. **Do not** put a 60Hz buffer in `useState`. Use `useStreamingSeries` (or a ref + imperative `setData`).
 
 Cursor HUD without re-rendering the canvas tree:
 
@@ -83,20 +83,61 @@ const x = useScales((s) => s.x);
 
 ---
 
-## Recipes
-
-### Streaming window
+## Streaming in 60 seconds
 
 ```tsx
-import { Chart, type ChartRef, streamingWindow } from "@ruplot/react";
+import { Chart, useStreamingSeries, useChartOptions } from "@ruplot/react";
+import { useEffect } from "react";
 
-<Chart ref={ref} data={data} options={options} streaming={{ enabled: true, follow: true }} />
+const stream = useStreamingSeries({ capacity: 3000 });
+const options = useChartOptions(
+  () => ({
+    width: 800,
+    height: 300,
+    series: [{}, { stroke: "#0ea5e9", width: 2 }],
+    scales: { x: { time: false } },
+    legend: { show: false },
+  }),
+  [],
+);
 
-// 60Hz: mutate a ref buffer, then:
-ref.current?.getInstance()?.setData(next, false);
+useEffect(() => {
+  const id = setInterval(() => {
+    stream.push([Date.now() / 1000, Math.random()]);
+  }, 16);
+  return () => clearInterval(id);
+}, [stream]);
+
+return <Chart ref={stream.chartRef} data={stream.data} options={options} streaming />;
 ```
 
-`streamingWindow({ buffer, chunk, capacity })` is for slower React-driven windows — not a substitute for a ref at 60Hz. Demo: [03 Updates → Streaming](https://avoronov93.github.io/react-uplot-core/?path=/docs/03-updates-streaming--docs).
+`push` updates a sliding window and calls imperative `setData(false)` on the bound chart — it does **not** `setState` at 60Hz. That is the stream-60 happy path.
+
+---
+
+## Migrate from uplot-react (1 minute)
+
+```tsx
+// before
+import UplotReact from "uplot-react";
+
+// after — same props surface for the common case
+import UplotReact from "@ruplot/react/compat";
+```
+
+| uplot-react | `@ruplot/react/compat` / Chart |
+| --- | --- |
+| `onCreate` | `onCreate` (compat) or `onReady` (Chart) |
+| `onDelete` | `onDelete` (compat); Chart destroys on unmount |
+| `resetScales` | same prop; prefer `streaming` on Chart for follow policy |
+| `target` | supported on compat as `HTMLElement` only — **init-function target not supported**; pass an element |
+| cursor via React state | `useCursor` / `Chart.Tooltip` |
+
+New code should use `<Chart>` + `useStreamingSeries`. Compat is a bridge, not the long-term API.
+
+---
+
+## Recipes
 
 ### Brush + follow (one owner of X)
 
@@ -173,28 +214,37 @@ Keep `options` stable. Open stream-60 commit comparison: [See React commits: upl
 
 ---
 
-## Stability (0.3)
+## Stability (0.4)
 
 | Import | Status |
 | --- | --- |
-| `@ruplot/react` | **stable for 0.x** — Chart, composition (`Brush`, `Tooltip`, `Legend`, `AutoSize`, `SyncGroup`), hooks, common helpers (`streamingWindow`, `createChartStores`, `batchStores`, plugins) |
+| `@ruplot/react` | **stable-ish for 0.4** — Chart, composition, hooks, `useStreamingSeries`, `useChartOptions`, common helpers |
+| `@ruplot/react/compat` | **migration bridge** — `UplotReact` (uplot-react props). Prefer Chart for new code |
 | `@ruplot/react/unstable` | **unstable until 1.0** — `streamingWindowTransferable`, `createDataWorker`, `createDataPlane`, `rebindSyncGroup` |
-| `@ruplot/core` | Engine (`ChartSession`, classifier, stores). Prefer React for apps; import core for custom hosts |
-
-Semver on **0.x**: minors may add; breaking changes to the stable React surface will be called out. Unstable may change without a major. **1.0** = freeze the stable `@ruplot/react` export list (see checklist below).
+| `@ruplot/core` | Engine (`ChartSession`, classifier, stores). Prefer React for apps |
 
 ```ts
-import { Chart, streamingWindow } from "@ruplot/react";
+import { Chart, useStreamingSeries } from "@ruplot/react";
+import UplotReact from "@ruplot/react/compat";
 import { streamingWindowTransferable } from "@ruplot/react/unstable";
 ```
 
-### Toward 1.0 (checklist, not a date)
+### Toward 1.0 (checklist)
 
-- [ ] No further breaks on Chart props, composition slots, and documented hooks without a major
+- [ ] Freeze Chart props, composition slots, documented hooks, `useStreamingSeries`, `useChartOptions`
 - [ ] Remount matrix in README stays the contract
-- [ ] React 18 + 19 CI stays green
-- [ ] Unstable stays in `@ruplot/react/unstable` (workers / transferable / DataPlane factory / sync rebind)
-- [ ] Size budget (`pnpm size`) and stream-60 bench remain release gates
+- [ ] React 18 + 19 CI stays green; stream-60 + size remain release gates
+- [ ] `/compat` remains a thin bridge (no second core)
+- [ ] Unstable stays in `@ruplot/react/unstable`
+---
+
+## Decision guide
+
+| Choose | When |
+| --- | --- |
+| **ruplot** (`@ruplot/react`) | Frequent updates / streaming; commit cost matters; brush/tooltip/sync; migrating from uplot-react without losing the stream-60 win |
+| **uplot-react** | Rare-update / static chart; React &lt; 18; no appetite for stable-refs discipline |
+| **raw uPlot** | Non-React host or fully custom engine integration |
 
 ---
 

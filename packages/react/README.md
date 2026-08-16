@@ -33,7 +33,9 @@ import "uplot/dist/uPlot.min.css";
 
 CI **stream-60** lane (`pnpm bench`). [See React commits: uplot-react vs ruplot](https://avoronov93.github.io/react-uplot-core/?path=/docs/07-compare-streaming-commits--docs).
 
-**Hot path:** stable `options` / `data` refs · immutable columns · no 60Hz `useState` buffer.
+**Hot path:** stable `options` / `data` refs (`useChartOptions`) · immutable columns · `useStreamingSeries` (not 60Hz `useState`).
+
+**Migrate from uplot-react:** `import UplotReact from "@ruplot/react/compat"`.
 
 **Docs:** [GitHub README](https://github.com/AVoronov93/react-uplot-core#readme) (recipes, remount, migration, stability) · [Storybook](https://avoronov93.github.io/react-uplot-core/) · [API](https://avoronov93.github.io/react-uplot-core/?path=/docs/01-overview-api--docs)
 
@@ -167,7 +169,8 @@ ref.current?.getDebugSnapshot();
 
 | Import | Status |
 | --- | --- |
-| `@ruplot/react` | **stable for 0.x** — Chart, composition, hooks, common helpers |
+| `@ruplot/react` | **stable-ish for 0.4** — Chart, composition, hooks, `useStreamingSeries`, `useChartOptions`, common helpers |
+| `@ruplot/react/compat` | **migration bridge** — `UplotReact` |
 | `@ruplot/react/unstable` | **unstable until 1.0** — `streamingWindowTransferable`, `createDataWorker`, `createDataPlane`, `rebindSyncGroup` |
 | [`@ruplot/core`](https://www.npmjs.com/package/@ruplot/core) | engine — session, classifier, stores |
 

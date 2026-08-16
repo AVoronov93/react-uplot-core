@@ -51,6 +51,12 @@ export { SyncGroupComponent as SyncGroup, useSyncGroup, useSyncGroupContext };
 export type { SyncGroupProps, SyncGroupHandle, SyncGroupContextValue };
 export { TooltipComponent as Tooltip, type TooltipProps, type TooltipRenderProps };
 export { usePlugin };
+export {
+	useStreamingSeries,
+	type UseStreamingSeriesOptions,
+	type StreamingSeries,
+} from "./use-streaming-series.js";
+export { useChartOptions } from "./use-chart-options.js";
 
 /** App-facing helpers (stable). Engine/advanced APIs: `@ruplot/react/unstable` or `@ruplot/core`. */
 export {
