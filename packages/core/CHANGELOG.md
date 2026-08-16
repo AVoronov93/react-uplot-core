@@ -1,5 +1,11 @@
 # @ruplot/core
 
+## 0.3.1
+
+### Patch Changes
+
+- 8c316f1: Docs/positioning patch: README hero rewrite (who/not, stream-60 proof, stability/limitations, 1.0 checklist), npm description + keywords, action-oriented Compare proof links, messaging consistency (React 18+, ruplot / `@ruplot/*`, unstable labeled as unstable).
+
 ## 0.3.0
 
 ### Minor Changes

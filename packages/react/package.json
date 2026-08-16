@@ -1,6 +1,6 @@
 {
 	"name": "@ruplot/react",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "React 18+ bindings for uPlot — 0 React commits at 60Hz streaming (uplot-react / react-uplot alternative)",
 	"type": "module",
 	"sideEffects": false,
