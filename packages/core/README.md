@@ -1,8 +1,14 @@
 # @ruplot/core
 
-Framework-agnostic engine behind [`@ruplot/react`](https://www.npmjs.com/package/@ruplot/react): `ChartSession`, option classifier, external stores, sync registry, plugins, data helpers.
+**Framework-agnostic uPlot engine** behind [`@ruplot/react`](https://www.npmjs.com/package/@ruplot/react): `ChartSession`, option classifier, external stores, sync, plugins.
 
 React apps should start with `@ruplot/react`. Use this package for custom hosts, workers, or non-React bindings.
+
+Product **ruplot** · repo `react-uplot-core` → packages [`@ruplot/react`](https://www.npmjs.com/package/@ruplot/react) + [`@ruplot/core`](https://www.npmjs.com/package/@ruplot/core).
+
+```bash
+pnpm add @ruplot/core uplot
+```
 
 ```bash
 pnpm add @ruplot/core uplot
@@ -15,7 +21,7 @@ const session = createChartSession({ target, options, data });
 session.apply([{ type: "setData", data: next, resetScales: false }]);
 ```
 
-**Docs:** [GitHub README](https://github.com/Avoronov93/react-uplot-core#readme) · [Storybook API](https://avoronov93.github.io/react-uplot-core/?path=/docs/01-overview-api--docs)
+**Docs:** [GitHub README](https://github.com/AVoronov93/react-uplot-core#readme) · [Storybook API](https://avoronov93.github.io/react-uplot-core/?path=/docs/01-overview-api--docs)
 
 ---
 
@@ -83,7 +89,7 @@ batchStores(() => {
 | Helper | Role |
 | --- | --- |
 | `streamingWindow` | Fixed-capacity append / drop-oldest |
-| `streamingWindowTransferable` | Same, transferable typed buffers (advanced) |
+| `streamingWindowTransferable` | Same, transferable typed buffers (`@ruplot/react/unstable`) |
 | `dualData` / `createDataPlane` | Display Y vs source values for tooltips |
 | `seriesStepped` / `holdForwardGaps` | Stepped series + sparse feeds |
 | `createDataWorker` | Off-thread window client |
@@ -114,6 +120,8 @@ session.resetDebugStats();
 ```
 
 Peer: `uplot` `^1.6.31`.
+
+React apps: [`@ruplot/react`](https://www.npmjs.com/package/@ruplot/react). Unstable helpers (`createDataWorker`, `createDataPlane`, `streamingWindowTransferable`, `rebindSyncGroup`) are also on `@ruplot/react/unstable`.
 
 ## License
 

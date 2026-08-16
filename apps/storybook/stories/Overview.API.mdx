@@ -4,9 +4,9 @@ import { Meta } from "@storybook/blocks";
 
 # @ruplot/react API
 
-React **18+** bindings for uPlot (19 recommended). Prefer `@ruplot/react` for app code.
-Advanced helpers: `@ruplot/react/unstable` — see the [GitHub README](https://github.com/Avoronov93/react-uplot-core#api-stability-03)
-(when to use, remount rules, migration).
+React **18+** (19 recommended) bindings for uPlot. App code: `@ruplot/react`.
+Unstable until 1.0: `@ruplot/react/unstable`. Pitch, remount rules, recipes:
+[GitHub README](https://github.com/AVoronov93/react-uplot-core#readme).
 
 ## Install
 
@@ -1186,7 +1186,7 @@ By default the shell <code className="doc-type">clamp</code>s the box inside the
 
 May change before 1.0. Includes `streamingWindowTransferable`, `createDataWorker`,
 `createDataPlane`, `rebindSyncGroup`. Details:
-[README → API stability](https://github.com/Avoronov93/react-uplot-core#api-stability-03).
+[README → Stability](https://github.com/AVoronov93/react-uplot-core#stability-03).
 
 ```tsx
 setData((prev) =>
@@ -1264,7 +1264,7 @@ const plugins = [thresholdPlugin({ y: 25, stroke: "#f97316", dash: [6, 4] })];
 ## 6. Update classifier
 
 You do not call this from app code — `<Chart>` does. Full remount matrix:
-[README → Mental model](https://github.com/Avoronov93/react-uplot-core#mental-model).
+[README → Mental model](https://github.com/AVoronov93/react-uplot-core#mental-model-below-the-fold).
 
 <table className="doc-api-table">
   <thead>

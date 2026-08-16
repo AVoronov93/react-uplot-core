@@ -1,7 +1,7 @@
 {
 	"name": "@ruplot/core",
 	"version": "0.3.0",
-	"description": "Framework-agnostic engine for ruplot — session, classifier, stores, sync, data plane",
+	"description": "Framework-agnostic uPlot engine for ruplot — ChartSession, option classifier, stores, streaming",
 	"type": "module",
 	"sideEffects": false,
 	"main": "./dist/index.cjs",
@@ -25,12 +25,18 @@
 	},
 	"keywords": [
 		"uplot",
+		"react-uplot",
+		"uplot-react",
+		"react",
 		"chart",
+		"charts",
+		"time-series",
 		"timeseries",
-		"canvas",
-		"performance",
 		"streaming",
-		"react"
+		"canvas",
+		"high-performance",
+		"dashboard",
+		"telemetry"
 	],
 	"repository": {
 		"type": "git",
@@ -40,7 +46,7 @@
 	"bugs": {
 		"url": "https://github.com/Avoronov93/react-uplot-core/issues"
 	},
-	"homepage": "https://github.com/Avoronov93/react-uplot-core#readme",
+	"homepage": "https://github.com/AVoronov93/react-uplot-core#readme",
 	"peerDependencies": {
 		"uplot": "^1.6.31"
 	},

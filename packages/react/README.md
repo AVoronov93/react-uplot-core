@@ -1,8 +1,15 @@
 # @ruplot/react
 
-React **18+** bindings for [uPlot](https://github.com/leeoniya/uPlot) that keep streaming charts off the React commit path (19 recommended).
+**uPlot in React that does not torch your commit budget.**  
+60Hz streaming, **0 React commits** on the stream-60 scenario, same FPS as raw uPlot.
 
-At 60Hz, typical wrappers re-render ~100+ times. **ruplot stays at 0 React commits** while matching raw uPlot FPS.
+**React 18+** (19 recommended). Product name **ruplot** — this package is the React API. Engine: [`@ruplot/core`](https://www.npmjs.com/package/@ruplot/core). Repo `react-uplot-core` → packages `@ruplot/*`.
+
+[![npm](https://img.shields.io/npm/v/@ruplot/react?label=%40ruplot%2Freact)](https://www.npmjs.com/package/@ruplot/react)
+[![CI](https://img.shields.io/github/actions/workflow/status/AVoronov93/react-uplot-core/ci.yml?label=CI)](https://github.com/AVoronov93/react-uplot-core/actions)
+[![React 18/19](https://img.shields.io/badge/React-18%20%2F%2019-61dafb)](https://github.com/AVoronov93/react-uplot-core)
+[![Storybook](https://img.shields.io/badge/Storybook-live-ff4785)](https://avoronov93.github.io/react-uplot-core/)
+[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/AVoronov93/react-uplot-core/blob/main/LICENSE)
 
 ```bash
 pnpm add @ruplot/react uplot
@@ -15,10 +22,20 @@ import "uplot/dist/uPlot.min.css";
 <Chart data={data} options={options} />
 ```
 
-Keep `options` and `data` **stable by reference** on hot paths (`useMemo` / module scope). Inline `options={{ … }}` every render forces extra classifier work and can recreate the chart.
+**Use it** for realtime dashboards, telemetry, trading / industrial charts — anywhere cursor, scales, or data update often and React commit cost matters.
 
-**Docs:** [repo README](https://github.com/Avoronov93/react-uplot-core#readme) (when-to-use, remount rules, migration)  
-**Demos:** [Storybook](https://avoronov93.github.io/react-uplot-core/) · [API tables](https://avoronov93.github.io/react-uplot-core/?path=/docs/01-overview-api--docs)
+**Skip it** for static one-shots, React &lt; 18, or apps that recreate `options={{ … }}` every render.
+
+| | raw uPlot | uplot-react | react-uplot | **ruplot** |
+| --- | ---: | ---: | ---: | ---: |
+| stream-60 **FPS** | 59.1 | 59.0 | 59.1 | **59.1** |
+| stream React **commits** | 0 | 119 | 119 | **0** |
+
+CI **stream-60** lane (`pnpm bench`). [See React commits: uplot-react vs ruplot](https://avoronov93.github.io/react-uplot-core/?path=/docs/07-compare-streaming-commits--docs).
+
+**Hot path:** stable `options` / `data` refs · immutable columns · no 60Hz `useState` buffer.
+
+**Docs:** [GitHub README](https://github.com/AVoronov93/react-uplot-core#readme) (recipes, remount, migration, stability) · [Storybook](https://avoronov93.github.io/react-uplot-core/) · [API](https://avoronov93.github.io/react-uplot-core/?path=/docs/01-overview-api--docs)
 
 ---
 
@@ -83,7 +100,7 @@ Hooks must run **under** `<Chart>`. They use `useSyncExternalStore` — the canv
 
 ## Streaming
 
-Do **not** put the buffer in `useState` at 60Hz. Keep it in a ref and call `session` / `setData` (see Storybook **03 Updates → Streaming**), or use the helper for slower React-driven windows:
+Do **not** put the buffer in `useState` at 60Hz. Keep it in a ref and call `setData` on the instance (see Storybook **03 Updates → Streaming**), or use the helper for slower React-driven windows:
 
 ```tsx
 import { Chart, streamingWindow } from "@ruplot/react";
@@ -132,8 +149,6 @@ ref.current?.getDebugSnapshot();
 // { stats: { setData, patchSeries, recreate, … }, lastKind, lastReasons }
 ```
 
-`debug={true}` logs recreate reasons. `RUPLOT_DEBUG=1` also enables logging. In-place mutation of `data` columns warns in development.
-
 ---
 
 ## What updates without remounting
@@ -152,14 +167,11 @@ ref.current?.getDebugSnapshot();
 
 | Import | Status |
 | --- | --- |
-| `@ruplot/react` | **stable** — Chart, composition, hooks, common helpers |
-| `@ruplot/react/unstable` | **unstable** until 1.0 — `streamingWindowTransferable`, `createDataWorker`, `createDataPlane`, `rebindSyncGroup` |
+| `@ruplot/react` | **stable for 0.x** — Chart, composition, hooks, common helpers |
+| `@ruplot/react/unstable` | **unstable until 1.0** — `streamingWindowTransferable`, `createDataWorker`, `createDataPlane`, `rebindSyncGroup` |
 | [`@ruplot/core`](https://www.npmjs.com/package/@ruplot/core) | engine — session, classifier, stores |
 
-```ts
-import { Chart, streamingWindow } from "@ruplot/react";
-import { streamingWindowTransferable } from "@ruplot/react/unstable";
-```
+**Non-goals:** not a general chart kit; not React 17; not free if you `setState` the buffer at 60Hz.
 
 Peers: `react` / `react-dom` `^18 || ^19`, `uplot` `^1.6.31`.
 
