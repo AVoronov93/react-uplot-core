@@ -1,6 +1,6 @@
 {
 	"name": "@ruplot/core",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Framework-agnostic engine for ruplot — session, classifier, stores, sync, data plane",
 	"type": "module",
 	"sideEffects": false,
